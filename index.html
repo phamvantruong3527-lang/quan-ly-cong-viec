@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Work Tracker Ultimate</title>
+    <title>Work Tracker Pro Max</title>
     <style>
         :root {
             --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93;
@@ -49,16 +49,17 @@
             </div>
             <div>
                 <b id="userName" onclick="editName()">Sếp Tổng</b><br>
-                <div class="audio-setting" onclick="document.getElementById('audioFile').click()">🎵 Chọn nhạc chuông</div>
+                <div class="audio-setting" onclick="document.getElementById('audioFile').click()">🎵 Nhạc chuông thông báo</div>
                 <input type="file" id="audioFile" accept="audio/*" style="display:none" onchange="loadAudio(event)">
             </div>
         </div>
+        <button onclick="testNotif()" style="background:none; border:none; font-size:22px;">🔔</button>
         <button onclick="toggleDark()" style="background:none; border:none; font-size:22px;">🌓</button>
     </div>
 
     <div class="card">
         <div class="input-row">
-            <input type="text" id="taskName" placeholder="Tên việc...">
+            <input type="text" id="taskName" placeholder="Tên việc làm...">
             <input type="datetime-local" id="taskDate" class="date-input">
             <button class="add-btn" onclick="addTask()">LƯU</button>
         </div>
@@ -69,40 +70,67 @@
     <audio id="alarmAudio" loop></audio>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('v11_tasks')) || [];
-        let cfg = JSON.parse(localStorage.getItem('v11_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false, ringtone: "" };
+        // --- 1. THÔNG BÁO & SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
 
-        // 1. Âm thanh & Nhắc nhở
+        function sendPush(title, body) {
+            if (Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body });
+                });
+            }
+        }
+
+        function testNotif() {
+            Notification.requestPermission().then(perm => {
+                if (perm === 'granted') sendPush("Work Tracker", "Thông báo đã sẵn sàng! 🚀");
+                else alert("Sếp cần cho phép thông báo trong cài đặt!");
+            });
+        }
+
+        // --- 2. QUẢN LÝ DỮ LIỆU ---
+        let tasks = JSON.parse(localStorage.getItem('v12_tasks')) || [];
+        let cfg = JSON.parse(localStorage.getItem('v12_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false, ringtone: "" };
+
         function loadAudio(e) {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 cfg.ringtone = ev.target.result;
                 document.getElementById('alarmAudio').src = ev.target.result;
-                localStorage.setItem('v11_cfg', JSON.stringify(cfg));
-                alert("Đã cài nhạc chuông!");
+                localStorage.setItem('v12_cfg', JSON.stringify(cfg));
+                sendPush("Cài đặt", "Đã cập nhật nhạc chuông mới 🎵");
             };
             reader.readAsDataURL(e.target.files[0]);
         }
 
         setInterval(() => {
             const now = new Date();
-            const nowStr = now.toISOString().slice(0,16); // Định dạng YYYY-MM-DDTHH:mm
+            const nowStr = now.getFullYear() + "-" + 
+                           String(now.getMonth()+1).padStart(2,'0') + "-" + 
+                           String(now.getDate()).padStart(2,'0') + "T" + 
+                           String(now.getHours()).padStart(2,'0') + ":" + 
+                           String(now.getMinutes()).padStart(2,'0');
+
             tasks.forEach(t => {
                 if (t.d === nowStr && !t.reminded && t.status !== 'done') {
                     t.reminded = true;
                     const audio = document.getElementById('alarmAudio');
                     if(cfg.ringtone) audio.src = cfg.ringtone;
                     audio.play();
+                    sendPush("⏰ ĐẾN GIỜ!", t.n);
                     render();
-                    if(confirm("⏰ ĐẾN GIỜ: " + t.n + "\nBấm OK để tắt nhạc!")) {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    }
+                    setTimeout(() => {
+                        if(confirm("⏰ VIỆC CẦN LÀM: " + t.n + "\nBấm OK để tắt nhạc!")) {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        }
+                    }, 500);
                 }
             });
-        }, 10000);
+        }, 15000);
 
-        // 2. Xử lý dữ liệu
         function getLunar(str) {
             const d = new Date(str);
             const diff = Math.floor((d - new Date(2026, 4, 18)) / 86400000);
@@ -116,6 +144,7 @@
             if(!n || !d) return;
             tasks.push({ id: Date.now(), n, d, l: getLunar(d), reminded: false, status: 'pending' });
             save();
+            sendPush("Đã lưu việc", `${n} vào lúc ${d.replace('T',' ')}`);
             document.getElementById('taskName').value = '';
         }
 
@@ -128,9 +157,10 @@
             const newDate = document.getElementById(`newDate-${id}`).value;
             tasks = tasks.map(t => t.id === id ? {...t, d: newDate, l: getLunar(newDate), reminded: false} : t);
             save();
+            sendPush("Cập nhật thành công", "Lịch nhắc đã được dời sang giờ mới ✅");
         }
 
-        function save() { localStorage.setItem('v11_tasks', JSON.stringify(tasks)); render(); }
+        function save() { localStorage.setItem('v12_tasks', JSON.stringify(tasks)); render(); }
 
         function render() {
             const list = document.getElementById('taskList');
@@ -149,10 +179,9 @@
                         </div>
                     </div>
                     <div class="edit-zone" id="edit-${t.id}">
-                        <small style="font-size:10px; color:var(--sub)">Đổi ngày & giờ nhắc:</small>
                         <div class="edit-row">
                             <input type="datetime-local" id="newDate-${t.id}" value="${t.d}">
-                            <button class="btn-update" onclick="updateTask(${t.id})">CẬP NHẬT</button>
+                            <button class="btn-update" onclick="updateTask(${t.id})">SỬA</button>
                         </div>
                     </div>
                 </div>
@@ -160,12 +189,12 @@
         }
 
         function del(id) { if(confirm('Xóa việc này?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
-        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v11_cfg', JSON.stringify(cfg)); }
+        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v12_cfg', JSON.stringify(cfg)); }
         function applyTheme() { document.getElementById('mainBody').className = cfg.dark ? 'dark-mode' : ''; }
-        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v11_cfg', JSON.stringify(cfg)); } }
+        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v12_cfg', JSON.stringify(cfg)); } }
         function uploadImg(e) {
             const r = new FileReader();
-            r.onload = () => { cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result; localStorage.setItem('v11_cfg', JSON.stringify(cfg)); };
+            r.onload = () => { cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result; localStorage.setItem('v12_cfg', JSON.stringify(cfg)); };
             r.readAsDataURL(e.target.files[0]);
         }
 
