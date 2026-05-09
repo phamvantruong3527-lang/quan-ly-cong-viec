@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Work Tracker Slim</title>
+    <title>Work Tracker Minimal</title>
     <style>
         :root {
             --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93;
@@ -13,88 +13,85 @@
         }
         body.dark-mode { --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
         
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 12px 40px 12px; transition: 0.3s; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 12px 20px 12px; transition: 0.3s; overflow-x: hidden; }
         
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; margin-bottom: 5px; }
-        #avatarContainer { width: 45px; height: 45px; border-radius: 14px; overflow: hidden; border: 2px solid var(--accent); background: #fff; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 5px; margin-bottom: 8px; }
+        #avatarContainer { width: 42px; height: 42px; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent); background: #fff; flex-shrink: 0; }
         #avatarImg { width: 100%; height: 100%; object-fit: cover; }
         
-        .card { background: var(--card); padding: 15px; border-radius: 22px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: none; }
-        .total-box { background: #1C1C1E; color: white; text-align: center; padding: 12px; }
-        .total-amount { font-size: 28px; font-weight: 800; color: var(--accent); }
+        .card { background: var(--card); padding: 12px; border-radius: 20px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .total-box { background: #1C1C1E; color: white; display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; }
+        .total-amount { font-size: 24px; font-weight: 800; color: var(--accent); }
 
-        .compact-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 8px; }
-        .input-group { flex: 1; }
-        .input-label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 4px; display: block; }
+        /* Hàng nhập liệu siêu gọn */
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        input { flex: 1; padding: 10px 12px; border: none; border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
+        .date-input { width: 140px; flex-shrink: 0; }
         
-        input { width: 100%; padding: 10px; border: none; border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
+        .add-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 10px 18px; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .add-btn:active { opacity: 0.7; transform: scale(0.95); }
 
-        .lunar-small { font-size: 13px; font-weight: 700; color: var(--accent); }
-        
-        button.add-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 10px 15px; font-weight: 700; font-size: 14px; }
+        .lunar-preview { font-size: 11px; font-weight: 700; color: var(--accent); margin-top: 6px; padding-left: 5px; }
 
-        .task-item { background: var(--card); padding: 12px 15px; border-radius: 18px; margin-bottom: 8px; border-left: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-        .task-item.done { border-left-color: var(--success); opacity: 0.8; }
+        .task-item { background: var(--card); padding: 12px; border-radius: 18px; margin-bottom: 8px; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .task-item.done { border-left-color: var(--success); }
         
-        .theme-btn { background: none; border: none; font-size: 20px; padding: 0; }
-        .btn-action { padding: 8px 12px; font-size: 12px; border-radius: 10px; border: none; font-weight: 600; margin-left: 5px; }
+        .btn-action { padding: 8px 12px; font-size: 11px; border-radius: 10px; border: none; font-weight: 700; margin-left: 4px; transition: 0.2s; }
     </style>
 </head>
 <body id="mainBody">
 
     <div class="header">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
             <div id="avatarContainer" onclick="document.getElementById('fileInput').click()">
                 <img id="avatarImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
                 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadImg(event)">
             </div>
             <div>
-                <b id="userName" onclick="editName()" style="font-size: 16px;">Sếp Tổng</b><br>
-                <small id="dateNow" style="color:var(--sub); font-size:11px"></small>
+                <b id="userName" onclick="editName()" style="font-size: 15px;">Sếp Tổng</b><br>
+                <small id="dateNow" style="color:var(--sub); font-size:10px"></small>
             </div>
         </div>
-        <button class="theme-btn" onclick="toggleDark()">🌓</button>
+        <button onclick="toggleDark()" style="background:none; border:none; font-size:18px;">🌓</button>
     </div>
 
     <div class="card total-box">
+        <small style="font-size:10px; font-weight:700; opacity:0.6">THU NHẬP TUẦN</small>
         <span class="total-amount" id="totalDisplay">0</span>
-        <small style="font-size:10px; opacity:0.7">VNĐ (7 NGÀY QUA)</small>
     </div>
 
     <div class="card">
-        <span class="input-label">Việc mới & Ngày dương</span>
-        <input type="text" id="taskName" placeholder="Tên việc...">
-        <div class="compact-row">
-            <div class="input-group">
-                <input type="datetime-local" id="taskDate" onchange="showLunar()">
-            </div>
+        <div class="input-row">
+            <input type="text" id="taskName" placeholder="Tên việc...">
+            <input type="datetime-local" id="taskDate" class="date-input" onchange="showLunar()">
             <button class="add-btn" onclick="addTask()">LƯU</button>
         </div>
-        <div id="lunarPreview" style="margin-top:8px; display:none" class="lunar-small"></div>
+        <div id="lunarPreview" class="lunar-preview" style="display:none"></div>
     </div>
 
     <div id="taskList"></div>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('v6_tasks')) || [];
-        let cfg = JSON.parse(localStorage.getItem('v6_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false };
+        let tasks = JSON.parse(localStorage.getItem('v7_tasks')) || [];
+        let cfg = JSON.parse(localStorage.getItem('v7_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false };
 
         function getLunar(str) {
             const d = new Date(str);
             const day = d.getDate(), month = d.getMonth() + 1, year = d.getFullYear();
-            if (year === 2026 && month === 5 && day === 18) return "02/04 Âm lịch";
-            // Thuật toán bù trừ khớp với mốc 18/5/2026
-            const diff = Math.floor((d - new Date(2026, 4, 18)) / 86400000);
-            let ld = 2 + diff, lm = 4;
-            while(ld > 30) { ld -= 30; lm++; } while(ld < 1) { ld += 29; lm--; }
-            return `${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} Âm lịch`;
+            // Khớp mốc 18/05/2026 dương = 02/04 âm
+            const baseD = new Date(2026, 4, 18), baseL = 2; 
+            const diff = Math.floor((d - baseD) / 86400000);
+            let ld = baseL + diff, lm = 4;
+            while(ld > 29) { ld -= 29; lm++; } while(ld < 1) { ld += 29; lm--; }
+            return `Ngày ${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} (Âm Lịch)`;
         }
 
         function showLunar() {
             const v = document.getElementById('taskDate').value;
             if(v) {
-                document.getElementById('lunarPreview').style.display = 'block';
-                document.getElementById('lunarPreview').innerText = "✨ " + getLunar(v);
+                const lp = document.getElementById('lunarPreview');
+                lp.style.display = 'block';
+                lp.innerText = "🌙 " + getLunar(v);
             }
         }
 
@@ -102,19 +99,21 @@
             const r = new FileReader();
             r.onload = () => { 
                 cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result;
-                localStorage.setItem('v6_cfg', JSON.stringify(cfg));
+                localStorage.setItem('v7_cfg', JSON.stringify(cfg));
             };
             r.readAsDataURL(e.target.files[0]);
         }
 
         function addTask() {
             const n = document.getElementById('taskName').value, d = document.getElementById('taskDate').value;
-            if(!n || !d) return alert("Sếp nhập thiếu!");
+            if(!n || !d) return;
             tasks.push({ id: Date.now(), n, d, l: getLunar(d), p: 0, s: 'p', doneAt: null });
-            save(); document.getElementById('taskName').value = ''; document.getElementById('lunarPreview').style.display = 'none';
+            save(); 
+            document.getElementById('taskName').value = ''; 
+            document.getElementById('lunarPreview').style.display = 'none';
         }
 
-        function save() { localStorage.setItem('v6_tasks', JSON.stringify(tasks)); render(); }
+        function save() { localStorage.setItem('v7_tasks', JSON.stringify(tasks)); render(); }
 
         function render() {
             const list = document.getElementById('taskList'), display = document.getElementById('totalDisplay');
@@ -125,13 +124,13 @@
                 if(isD && new Date(t.doneAt) >= limit) total += t.p;
                 return `
                 <div class="task-item ${isD ? 'done' : ''}">
-                    <div>
-                        <span class="lunar-small">${t.l}</span><br>
-                        <b style="font-size:14px">${t.n}</b><br>
+                    <div style="max-width: 60%;">
+                        <b style="font-size:14px; display:block; margin-bottom:2px;">${t.n}</b>
+                        <span style="color:var(--accent); font-size:11px; font-weight:700;">${t.l}</span><br>
                         <small style="color:var(--sub); font-size:10px">${new Date(t.d).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}</small>
                     </div>
                     <div style="display:flex; align-items:center">
-                        ${isD ? `<b style="color:var(--success); font-size:13px; margin-right:5px">+${t.p/1000}k</b>` : ''}
+                        ${isD ? `<b style="color:var(--success); font-size:12px; margin-right:4px;">+${t.p.toLocaleString()}</b>` : ''}
                         <button class="btn-action" onclick="pay(${t.id})" style="background:var(--bg); color:var(--text)">${isD ? 'Sửa' : 'Xong'}</button>
                         <button class="btn-action" onclick="del(${t.id})" style="background:rgba(255,59,48,0.1); color:var(--danger)">X</button>
                     </div>
@@ -141,15 +140,15 @@
         }
 
         function pay(id) {
-            const p = prompt("Tiền công:");
+            const p = prompt("Tiền nhận được (VNĐ):");
             if(p !== null) {
                 tasks = tasks.map(x => x.id === id ? {...x, p: parseFloat(p) || 0, s: 'done', doneAt: new Date().toISOString()} : x);
                 save();
             }
         }
-        function del(id) { if(confirm('Xóa?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
-        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v6_cfg', JSON.stringify(cfg)); } }
-        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v6_cfg', JSON.stringify(cfg)); }
+        function del(id) { if(confirm('Xóa việc này?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
+        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v7_cfg', JSON.stringify(cfg)); } }
+        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v7_cfg', JSON.stringify(cfg)); }
         function applyTheme() { document.getElementById('mainBody').className = cfg.dark ? 'dark-mode' : ''; }
 
         window.onload = () => {
