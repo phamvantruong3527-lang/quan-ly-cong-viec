@@ -5,34 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Work Tracker Pro Max</title>
+    <title>Work Tracker Ultimate</title>
     <style>
         :root {
             --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93;
             --primary: #007AFF; --success: #34C759; --danger: #FF3B30; --accent: #FF9500;
         }
         body.dark-mode { --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 15px 40px 15px; transition: 0.3s; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 40px 15px; transition: 0.3s; }
         
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; margin-bottom: 10px; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
         #avatarContainer { width: 45px; height: 45px; border-radius: 14px; overflow: hidden; border: 2px solid var(--accent); background: #fff; }
         #avatarImg { width: 100%; height: 100%; object-fit: cover; }
         
-        .card { background: var(--card); padding: 12px; border-radius: 22px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        
-        /* Cài đặt âm thanh */
-        .audio-setting { font-size: 11px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--sub); }
+        .audio-setting { font-size: 11px; margin-top: 4px; color: var(--primary); cursor: pointer; font-weight: 600; }
+        .card { background: var(--card); padding: 15px; border-radius: 22px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 
-        .input-row { display: flex; gap: 6px; align-items: center; }
+        .input-row { display: flex; gap: 8px; align-items: center; }
         input { flex: 1; padding: 12px; border: none; border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
         .date-input { width: 110px; flex-shrink: 0; font-size: 11px; }
-        .add-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px 15px; font-weight: 700; font-size: 13px; }
+        .add-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 700; }
 
-        .task-item { background: var(--card); padding: 12px 15px; border-radius: 20px; margin-bottom: 8px; border-left: 5px solid var(--accent); }
-        .task-item.reminded { animation: pulse 1s infinite; border-left-color: var(--danger); }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .task-item { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 10px; border-left: 5px solid var(--accent); }
+        .task-main { display: flex; justify-content: space-between; align-items: center; }
+        
+        .edit-zone { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ccc; display: none; gap: 8px; flex-direction: column; }
+        .edit-row { display: flex; gap: 5px; }
 
-        .btn-action { padding: 8px 10px; font-size: 11px; border-radius: 10px; border: none; font-weight: 700; background: var(--bg); color: var(--text); margin-left: 4px; }
+        .btn-action { padding: 8px 12px; font-size: 11px; border-radius: 10px; border: none; font-weight: 700; background: var(--bg); color: var(--text); }
+        .btn-update { background: var(--success); color: white; padding: 10px; border-radius: 10px; border: none; font-weight: 700; flex: 1; }
+        
+        @keyframes alert-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
+        .reminded { animation: alert-shake 0.5s infinite; border-left-color: var(--danger) !important; background: #fff5f5; }
     </style>
 </head>
 <body id="mainBody">
@@ -44,79 +48,61 @@
                 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadImg(event)">
             </div>
             <div>
-                <b id="userName" onclick="editName()" style="font-size: 16px;">Sếp Tổng</b><br>
-                <div class="audio-setting">
-                    <span onclick="document.getElementById('audioFile').click()" style="cursor:pointer; color:var(--primary)">🎵 Chọn nhạc chuông</span>
-                    <input type="file" id="audioFile" accept="audio/*" style="display:none" onchange="loadAudio(event)">
-                </div>
+                <b id="userName" onclick="editName()">Sếp Tổng</b><br>
+                <div class="audio-setting" onclick="document.getElementById('audioFile').click()">🎵 Chọn nhạc chuông</div>
+                <input type="file" id="audioFile" accept="audio/*" style="display:none" onchange="loadAudio(event)">
             </div>
         </div>
-        <button onclick="toggleDark()" style="background:none; border:none; font-size:20px;">🌓</button>
+        <button onclick="toggleDark()" style="background:none; border:none; font-size:22px;">🌓</button>
     </div>
 
     <div class="card">
         <div class="input-row">
-            <input type="text" id="taskName" placeholder="Việc cần nhắc...">
+            <input type="text" id="taskName" placeholder="Tên việc...">
             <input type="datetime-local" id="taskDate" class="date-input">
-            <button class="add-btn" onclick="addTask()">HẸN GIỜ</button>
+            <button class="add-btn" onclick="addTask()">LƯU</button>
         </div>
     </div>
 
     <div id="taskList"></div>
 
-    <!-- Audio Player ẩn -->
     <audio id="alarmAudio" loop></audio>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('v10_tasks')) || [];
-        let cfg = JSON.parse(localStorage.getItem('v10_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false, ringtone: "" };
+        let tasks = JSON.parse(localStorage.getItem('v11_tasks')) || [];
+        let cfg = JSON.parse(localStorage.getItem('v11_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false, ringtone: "" };
 
-        // 1. Quản lý Âm thanh
+        // 1. Âm thanh & Nhắc nhở
         function loadAudio(e) {
-            const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = (ev) => {
                 cfg.ringtone = ev.target.result;
                 document.getElementById('alarmAudio').src = ev.target.result;
-                localStorage.setItem('v10_cfg', JSON.stringify(cfg));
-                alert("Đã lưu nhạc chuông mới!");
+                localStorage.setItem('v11_cfg', JSON.stringify(cfg));
+                alert("Đã cài nhạc chuông!");
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(e.target.files[0]);
         }
 
-        // 2. Bộ canh giờ ngầm (Alarm Engine)
         setInterval(() => {
             const now = new Date();
-            const currentTime = now.getFullYear() + "-" + 
-                                String(now.getMonth()+1).padStart(2,'0') + "-" + 
-                                String(now.getDate()).padStart(2,'0') + "T" + 
-                                String(now.getHours()).padStart(2,'0') + ":" + 
-                                String(now.getMinutes()).padStart(2,'0');
-
+            const nowStr = now.toISOString().slice(0,16); // Định dạng YYYY-MM-DDTHH:mm
             tasks.forEach(t => {
-                if (t.d === currentTime && t.s === 'p' && !t.reminded) {
-                    triggerAlarm(t);
+                if (t.d === nowStr && !t.reminded && t.status !== 'done') {
+                    t.reminded = true;
+                    const audio = document.getElementById('alarmAudio');
+                    if(cfg.ringtone) audio.src = cfg.ringtone;
+                    audio.play();
+                    render();
+                    if(confirm("⏰ ĐẾN GIỜ: " + t.n + "\nBấm OK để tắt nhạc!")) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
                 }
             });
-        }, 10000); // Quét mỗi 10 giây cho chính xác
+        }, 10000);
 
-        function triggerAlarm(task) {
-            task.reminded = true;
-            // Phát nhạc
-            const audio = document.getElementById('alarmAudio');
-            if (cfg.ringtone) audio.src = cfg.ringtone;
-            audio.play().catch(() => console.log("Cần sếp tương tác để phát nhạc"));
-            
-            // Hiện thông báo
-            if (Notification.permission === 'granted') {
-                new Notification("BÁO THỨC!", { body: task.n, tag: 'alarm' });
-            }
-            render();
-            alert("⏰ ĐẾN GIỜ: " + task.n);
-            audio.pause(); // Tắt nhạc khi sếp bấm OK
-        }
-
-        // 3. Logic App
+        // 2. Xử lý dữ liệu
         function getLunar(str) {
             const d = new Date(str);
             const diff = Math.floor((d - new Date(2026, 4, 18)) / 86400000);
@@ -128,40 +114,58 @@
         function addTask() {
             const n = document.getElementById('taskName').value, d = document.getElementById('taskDate').value;
             if(!n || !d) return;
-            tasks.push({ id: Date.now(), n, d, l: getLunar(d), s: 'p', reminded: false });
+            tasks.push({ id: Date.now(), n, d, l: getLunar(d), reminded: false, status: 'pending' });
             save();
             document.getElementById('taskName').value = '';
-            if (Notification.permission !== 'granted') Notification.requestPermission();
         }
 
-        function save() { localStorage.setItem('v10_tasks', JSON.stringify(tasks)); render(); }
+        function toggleEdit(id) {
+            const el = document.getElementById(`edit-${id}`);
+            el.style.display = (el.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function updateTask(id) {
+            const newDate = document.getElementById(`newDate-${id}`).value;
+            tasks = tasks.map(t => t.id === id ? {...t, d: newDate, l: getLunar(newDate), reminded: false} : t);
+            save();
+        }
+
+        function save() { localStorage.setItem('v11_tasks', JSON.stringify(tasks)); render(); }
 
         function render() {
             const list = document.getElementById('taskList');
             tasks.sort((a,b) => new Date(a.d) - new Date(b.d));
             list.innerHTML = tasks.map(t => `
                 <div class="task-item ${t.reminded ? 'reminded' : ''}">
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <div>
+                    <div class="task-main">
+                        <div style="max-width: 65%;">
                             <b style="font-size:14px;">${t.n}</b><br>
                             <span style="color:var(--accent); font-size:11px; font-weight:800;">🌙 ${t.l}</span>
                             <small style="color:var(--sub); font-size:10px; margin-left:5px;">${t.d.replace('T',' ')}</small>
                         </div>
-                        <div>
-                            <button class="btn-action" onclick="del(${t.id})">Xóa</button>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-action" onclick="toggleEdit(${t.id})">⚙️</button>
+                            <button class="btn-action" style="color:var(--danger)" onclick="del(${t.id})">X</button>
+                        </div>
+                    </div>
+                    <div class="edit-zone" id="edit-${t.id}">
+                        <small style="font-size:10px; color:var(--sub)">Đổi ngày & giờ nhắc:</small>
+                        <div class="edit-row">
+                            <input type="datetime-local" id="newDate-${t.id}" value="${t.d}">
+                            <button class="btn-update" onclick="updateTask(${t.id})">CẬP NHẬT</button>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function del(id) { tasks = tasks.filter(x => x.id !== id); save(); }
-        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v10_cfg', JSON.stringify(cfg)); }
+        function del(id) { if(confirm('Xóa việc này?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
+        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v11_cfg', JSON.stringify(cfg)); }
         function applyTheme() { document.getElementById('mainBody').className = cfg.dark ? 'dark-mode' : ''; }
-        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v10_cfg', JSON.stringify(cfg)); } }
+        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v11_cfg', JSON.stringify(cfg)); } }
         function uploadImg(e) {
             const r = new FileReader();
-            r.onload = () => { cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result; localStorage.setItem('v10_cfg', JSON.stringify(cfg)); };
+            r.onload = () => { cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result; localStorage.setItem('v11_cfg', JSON.stringify(cfg)); };
             r.readAsDataURL(e.target.files[0]);
         }
 
