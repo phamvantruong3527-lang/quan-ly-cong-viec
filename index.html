@@ -12,7 +12,112 @@
     <!-- Link ảnh logo sếp gửi làm Icon -->
     <link rel="apple-touch-icon" href="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
     <link rel="icon" type="image/png" href="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
-    <link rel="apple-touch-startup-image" href="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
+    <link rel="apple-touch-startup-image" href="https://api.clippid.com/st<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Đức Tú Event">
+
+    <!-- ICON APP (ĐÃ NHÚNG TRỰC TIẾP MÃ ẢNH ĐỨC TÚ) -->
+    <link rel="apple-touch-icon" href="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
+    <link rel="icon" href="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
+
+    <title>Đức Tú Event</title>
+    <style>
+        :root {
+            --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93;
+            --primary: #D4AF37; --success: #34C759; --danger: #FF3B30; --accent: #D4AF37;
+        }
+        body.dark-mode { --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 40px 15px; transition: 0.3s; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+        #avatarContainer { width: 55px; height: 55px; border-radius: 50%; overflow: hidden; border: 2px solid var(--accent); background: #fff; box-shadow: 0 4px 10px rgba(212,175,55,0.4); }
+        #avatarImg { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card { background: var(--card); padding: 15px; border-radius: 22px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(212,175,55,0.2); }
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        input { flex: 1; padding: 12px; border: none; border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
+        .add-btn { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 700; }
+        .task-item { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 10px; border-left: 5px solid var(--accent); }
+    </style>
+</head>
+<body id="mainBody">
+
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div id="avatarContainer">
+                <!-- Dùng thẳng link ảnh sếp gửi cho Avatar -->
+                <img id="avatarImg" src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+            </div>
+            <div>
+                <b style="font-size: 18px; color: #B8860B;">ĐỨC TÚ EVENT</b><br>
+                <small id="statusText" style="color:var(--sub); font-size:11px">Hệ thống sẵn sàng</small>
+            </div>
+        </div>
+        <button onclick="toggleDark()" style="background:none; border:none; font-size:22px;">🌓</button>
+    </div>
+
+    <div class="card">
+        <div class="input-row">
+            <input type="text" id="taskName" placeholder="Ghi chú việc...">
+            <input type="datetime-local" id="taskDate" style="width:110px; font-size:11px;">
+            <button class="add-btn" onclick="addTask()">LƯU</button>
+        </div>
+    </div>
+
+    <div id="taskList"></div>
+    <audio id="alarmAudio" loop></audio>
+
+    <script>
+        // Tối giản hóa để chạy mượt nhất
+        let tasks = JSON.parse(localStorage.getItem('v13_tasks')) || [];
+        let isDark = localStorage.getItem('v13_dark') === 'true';
+
+        function addTask() {
+            const n = document.getElementById('taskName').value, d = document.getElementById('taskDate').value;
+            if(!n || !d) return;
+            tasks.push({ id: Date.now(), n, d, reminded: false });
+            localStorage.setItem('v13_tasks', JSON.stringify(tasks));
+            render();
+            document.getElementById('taskName').value = '';
+            alert("Đã lưu lịch sếp nhé!");
+        }
+
+        function render() {
+            const list = document.getElementById('taskList');
+            tasks.sort((a,b) => new Date(a.d) - new Date(b.d));
+            list.innerHTML = tasks.map(t => `
+                <div class="task-item">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <div>
+                            <b style="font-size:14px; color:#B8860B;">${t.n}</b><br>
+                            <small style="color:var(--sub);">${t.d.replace('T',' ')}</small>
+                        </div>
+                        <button onclick="del(${t.id})" style="border:none; background:none; color:red; font-weight:bold;">X</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function del(id) { if(confirm('Xóa việc này?')) { tasks = tasks.filter(x => x.id !== id); localStorage.setItem('v13_tasks', JSON.stringify(tasks)); render(); } }
+        
+        function toggleDark() { 
+            isDark = !isDark; 
+            document.getElementById('mainBody').className = isDark ? 'dark-mode' : '';
+            localStorage.setItem('v13_dark', isDark);
+        }
+
+        window.onload = () => {
+            if(isDark) document.getElementById('mainBody').className = 'dark-mode';
+            render();
+        };
+    </script>
+</body>
+</html>orage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
 
     <title>Đức Tú - Work Tracker</title>
     <style>
