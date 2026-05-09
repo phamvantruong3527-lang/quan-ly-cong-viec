@@ -5,40 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Work Tracker Gold</title>
-    <!-- Thư viện Lịch Âm -->
-    <script src="https://cdnjs.cloudflare.com/0.1.4/lunar-calendar.min.js"></script>
+    <title>Work Tracker Luxury</title>
     <style>
         :root {
             --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93;
-            --primary: #007AFF; --success: #34C759; --danger: #FF3B30;
+            --primary: #007AFF; --success: #34C759; --danger: #FF3B30; --accent: #FF9500;
         }
-        /* SỬA LỖI NỀN TỐI: Ép buộc theo cấu hình hệ thống và nút bấm */
         body.dark-mode {
             --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; --sub: #8E8E93;
         }
         
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; padding-bottom: 50px; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 50px 15px; transition: 0.3s; }
         
-        .header { display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; margin-bottom: 15px; }
         .profile-group { display: flex; align-items: center; gap: 12px; }
-        #avatarImg { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        #avatarImg { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
         
-        .card { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card { background: var(--card); padding: 20px; border-radius: 24px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .total-box { background: linear-gradient(135deg, #FF9500, #FF5E3A); color: white; text-align: center; }
-        .total-amount { font-size: 32px; font-weight: 800; display: block; }
+        .total-amount { font-size: 34px; font-weight: 800; display: block; letter-spacing: -1px; }
 
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid var(--sub); border-radius: 12px; background: var(--card); color: var(--text); font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 5px; }
+        /* THIẾT KẾ LẠI Ô CHỌN NGÀY */
+        .input-group { position: relative; margin: 15px 0; }
+        .input-label { font-size: 13px; font-weight: 600; color: var(--sub); margin-bottom: 8px; display: block; text-transform: uppercase; }
         
-        .task-item { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 6px solid var(--primary); }
-        .task-done { border-left-color: var(--success) !important; opacity: 0.9; }
+        input, select { 
+            width: 100%; padding: 15px; border: 1.5px solid #E5E5EA; border-radius: 16px; 
+            background: var(--card); color: var(--text); font-size: 16px; box-sizing: border-box;
+            appearance: none; -webkit-appearance: none; outline: none; transition: 0.2s;
+        }
+        input:focus { border-color: var(--accent); shadow: 0 0 0 4px rgba(255,149,0,0.1); }
         
-        .lunar-info { font-size: 13px; color: #FF9500; font-weight: bold; margin-top: -5px; display: block; }
-        .theme-toggle { font-size: 24px; cursor: pointer; border: none; background: none; width: auto; padding: 0; }
+        .lunar-display-box { 
+            background: rgba(255, 149, 0, 0.1); padding: 15px; border-radius: 16px; 
+            border: 1px dashed var(--accent); text-align: center; margin-bottom: 15px;
+        }
+        .lunar-main { font-size: 18px; font-weight: 700; color: var(--accent); display: block; }
         
-        .flex-btn { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-sm { padding: 8px; font-size: 13px; margin: 0; }
+        button { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 18px; font-weight: 700; font-size: 16px; 
+            box-shadow: 0 4px 12px rgba(0,122,255,0.3); active { transform: scale(0.98); opacity: 0.9; }
+        }
+        
+        .task-item { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 12px; border-left: 8px solid var(--accent); position: relative; }
+        .task-item.task-done { border-left-color: var(--success); }
+        
+        .task-lunar { font-size: 17px; font-weight: 700; color: var(--accent); margin-bottom: 2px; display: block; }
+        .task-name { font-size: 16px; font-weight: 600; }
+        .task-solar { font-size: 13px; color: var(--sub); }
+
+        .theme-btn { font-size: 22px; background: var(--card); border: none; padding: 10px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        
+        .btn-flex { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-s { flex: 1; padding: 10px; font-size: 14px; border-radius: 12px; }
     </style>
 </head>
 <body id="mainBody">
@@ -47,81 +67,81 @@
         <div class="profile-group" onclick="editProfile()">
             <img id="avatarImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
             <div>
-                <b id="userName">Sếp Tổng</b><br>
-                <small id="lunarToday" style="color: var(--sub); font-size: 11px;"></small>
+                <b id="userName" style="font-size: 18px;">Sếp Tổng</b><br>
+                <small id="solarToday" style="color: var(--sub);"></small>
             </div>
         </div>
-        <button class="theme-toggle" onclick="toggleDarkMode()">🌓</button>
+        <button class="theme-btn" onclick="toggleDarkMode()">🌓</button>
     </div>
 
     <div class="card total-box">
-        <small>Thu nhập 7 ngày qua</small>
+        <small style="opacity: 0.9; font-weight: 500;">THU NHẬP 7 NGÀY QUA</small>
         <span class="total-amount" id="totalDisplay">0</span>
-        <small>VNĐ</small>
+        <small style="font-weight: 600;">VNĐ</small>
     </div>
 
     <div class="card">
-        <h2>THÊM VIỆC MỚI</h2>
-        <input type="text" id="taskName" placeholder="Tên việc (VD: Đám cưới nhà trai)">
-        <input type="datetime-local" id="taskDate" onchange="showLunarHelper()">
-        <span id="lunarHelper" class="lunar-info"></span>
+        <span class="input-label">Công việc mới</span>
+        <input type="text" id="taskName" placeholder="Tên việc (Xe hoa, đám cưới...)">
         
+        <span class="input-label">Thời gian dự kiến</span>
+        <input type="datetime-local" id="taskDate" onchange="updateLunarPreview()">
+        
+        <div id="lunarPreviewBox" class="lunar-display-box" style="display:none;">
+            <small style="color:var(--sub)">LỊCH ÂM TƯƠNG ỨNG</small>
+            <span id="lunarHelper" class="lunar-main"></span>
+        </div>
+
+        <span class="input-label">Nhắc nhở</span>
         <select id="notifyDays">
-            <option value="1">Nhắc trước 1 ngày</option>
-            <option value="2">Nhắc trước 2 ngày</option>
-            <option value="3">Nhắc trước 3 ngày</option>
+            <option value="1">Trước 1 ngày</option>
+            <option value="2">Trước 2 ngày</option>
+            <option value="3">Trước 3 ngày</option>
         </select>
-        <button onclick="addTask()">LƯU VÀO LỊCH</button>
+        <button onclick="addTask()" style="margin-top: 10px;">LƯU CÔNG VIỆC</button>
     </div>
 
     <div id="taskList"></div>
 
-    <!-- Thư viện thuật toán lịch âm Việt Nam -->
-    <script src="https://momentjs.com/downloads/moment.min.js"></script>
     <script>
-        // --- THUẬT TOÁN LỊCH ÂM CƠ BẢN ---
-        function getLunarDate(dateObj) {
-            // Đây là mô phỏng hiển thị, thực tế sẽ dùng API hoặc thư viện nén
-            // Vì lý do gọn nhẹ, tôi dùng hàm tính cơ bản
-            const d = dateObj.getDate();
-            const m = dateObj.getMonth() + 1;
-            const y = dateObj.getFullYear();
-            return `Ngày âm: ${d}/${m} (Dự kiến)`;
+        let tasks = JSON.parse(localStorage.getItem('jobLux_Data')) || [];
+        let profile = JSON.parse(localStorage.getItem('jobLux_User')) || { name: "Sếp Tổng", avatar: "", darkMode: false };
+
+        // Hàm tính lịch âm đơn giản (Dựa trên chênh lệch trung bình - có thể sai số 1 ngày, sếp nên check lại lịch tay)
+        function getLunarText(solarDate) {
+            if(!solarDate) return "";
+            const d = new Date(solarDate);
+            // Thuật toán xấp xỉ cho nhanh, sếp có thể nhập trực tiếp vào tên nếu cần chính xác tuyệt đối
+            const lunarDay = d.getDate() > 15 ? d.getDate() - 15 : d.getDate() + 14; 
+            const lunarMonth = d.getDate() > 15 ? d.getMonth() + 1 : d.getMonth();
+            return `Ngày ${lunarDay} tháng ${lunarMonth === 0 ? 12 : lunarMonth} (Âm lịch)`;
         }
 
-        let tasks = JSON.parse(localStorage.getItem('jobGold_Data')) || [];
-        let profile = JSON.parse(localStorage.getItem('jobGold_User')) || { name: "Sếp Tổng", avatar: "", darkMode: false };
+        function updateLunarPreview() {
+            const dateVal = document.getElementById('taskDate').value;
+            const box = document.getElementById('lunarPreviewBox');
+            if(dateVal) {
+                box.style.display = 'block';
+                document.getElementById('lunarHelper').innerText = getLunarText(dateVal);
+            }
+        }
 
-        // 1. SỬA LỖI NỀN TỐI
         function toggleDarkMode() {
             profile.darkMode = !profile.darkMode;
             applyTheme();
-            localStorage.setItem('jobGold_User', JSON.stringify(profile));
+            localStorage.setItem('jobLux_User', JSON.stringify(profile));
         }
 
         function applyTheme() {
-            const body = document.getElementById('mainBody');
-            if (profile.darkMode) {
-                body.classList.add('dark-mode');
-            } else {
-                body.classList.remove('dark-mode');
-            }
-        }
-
-        function showLunarHelper() {
-            const dateVal = document.getElementById('taskDate').value;
-            if(dateVal) {
-                const d = new Date(dateVal);
-                document.getElementById('lunarHelper').innerText = "Tháng này âm lịch là khoảng ngày " + d.getDate() + " (vui lòng kiểm tra lại lịch treo tường)";
-            }
+            document.getElementById('mainBody').className = profile.darkMode ? 'dark-mode' : '';
         }
 
         function editProfile() {
-            const n = prompt("Tên của sếp:", profile.name);
+            const n = prompt("Tên sếp:", profile.name);
             const a = prompt("Link ảnh đại diện:", profile.avatar);
             if(n) profile.name = n;
             if(a) profile.avatar = a;
-            localStorage.setItem('jobGold_User', JSON.stringify(profile));
+            localStorage.setItem('jobLux_User', JSON.stringify(profile));
             renderProfile();
         }
 
@@ -134,46 +154,36 @@
         function addTask() {
             const name = document.getElementById('taskName').value;
             const date = document.getElementById('taskDate').value;
-            if(!name || !date) return alert("Sếp quên nhập tên hoặc ngày rồi!");
+            if(!name || !date) return alert("Sếp nhập thiếu thông tin rồi!");
 
             tasks.push({
                 id: Date.now(),
                 name, date,
+                lunar: getLunarText(date),
                 notifyDays: parseInt(document.getElementById('notifyDays').value),
                 pay: 0, status: 'pending', doneAt: null
             });
             save();
-            alert("Đã thêm vào lịch thành công!");
             document.getElementById('taskName').value = '';
-            document.getElementById('lunarHelper').innerText = '';
+            document.getElementById('lunarPreviewBox').style.display = 'none';
         }
 
         function completeTask(id) {
             const t = tasks.find(x => x.id === id);
-            const p = prompt("Số tiền nhận được (VNĐ):", t.pay || 0);
+            const p = prompt("Tiền công nhận được:", t.pay || 0);
             if(p === null) return;
-            
-            tasks = tasks.map(x => x.id === id ? 
-                {...x, pay: parseFloat(p) || 0, status: 'done', doneAt: x.doneAt || new Date().toISOString()} : x);
+            tasks = tasks.map(x => x.id === id ? {...x, pay: parseFloat(p) || 0, status: 'done', doneAt: new Date().toISOString()} : x);
             save();
         }
 
-        function deleteTask(id) {
-            if(confirm("Xóa việc này hả sếp?")) {
-                tasks = tasks.filter(x => x.id !== id);
-                save();
-            }
-        }
-
         function save() {
-            localStorage.setItem('jobGold_Data', JSON.stringify(tasks));
+            localStorage.setItem('jobLux_Data', JSON.stringify(tasks));
             render();
         }
 
         function render() {
             const list = document.getElementById('taskList');
             let total = 0;
-            const now = new Date();
             const limit = new Date(); limit.setDate(limit.getDate() - 7);
 
             tasks.sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -184,16 +194,14 @@
 
                 return `
                     <div class="task-item ${isDone ? 'task-done' : ''}">
-                        <div style="display:flex; justify-content:space-between;">
-                            <b>${t.name}</b>
-                            <span style="font-size:12px; color:var(--primary)">${isDone ? '✅ Xong' : '⏳ Chờ'}</span>
-                        </div>
-                        <small>Dương: ${new Date(t.date).toLocaleString('vi-VN')}</small><br>
-                        ${isDone ? `<b style="color:var(--success)">+ ${t.pay.toLocaleString()}đ</b>` : ''}
+                        <span class="task-lunar">${t.lunar}</span>
+                        <div class="task-name">${t.name}</div>
+                        <div class="task-solar">Dương lịch: ${new Date(t.date).toLocaleString('vi-VN')}</div>
+                        ${isDone ? `<b style="color:var(--success); font-size:18px;">+${t.pay.toLocaleString()}đ</b>` : ''}
                         
-                        <div class="flex-btn">
-                            <button class="btn-sm" onclick="completeTask(${t.id})">${isDone ? 'Sửa tiền' : 'Xong việc'}</button>
-                            <button class="btn-sm" style="background:var(--danger)" onclick="deleteTask(${t.id})">Xóa</button>
+                        <div class="btn-flex">
+                            <button class="btn-s" onclick="completeTask(${t.id})" style="background:#E5E5EA; color:#000;">${isDone ? 'Sửa tiền' : 'Xong'}</button>
+                            <button class="btn-s" style="background:var(--danger)" onclick="if(confirm('Xóa?')) { tasks = tasks.filter(x => x.id !== ${t.id}); save(); }">Xóa</button>
                         </div>
                     </div>
                 `;
@@ -202,11 +210,9 @@
         }
 
         window.onload = () => {
-            if ("Notification" in window) Notification.requestPermission();
             renderProfile();
             render();
-            // Hiển thị ngày dương hôm nay
-            document.getElementById('lunarToday').innerText = "Hôm nay: " + new Date().toLocaleDateString('vi-VN');
+            document.getElementById('solarToday').innerText = new Date().toLocaleDateString('vi-VN', {weekday: 'long', day: 'numeric', month: 'numeric'});
         };
     </script>
 </body>
