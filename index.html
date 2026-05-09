@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Đức Tú Event">
+
+    <!-- ICON APP (MÃ HÓA TRỰC TIẾP - KHÔNG CẦN LINK) -->
+    <link rel="apple-touch-icon" href="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg">
+
     <title>Đức Tú Event</title>
     <style>
         :root {
@@ -14,7 +19,6 @@
         body.dark-mode { --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 40px 15px; }
         
-        /* Cấu hình Avatar góc trái */
         .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
         .avatar-box { width: 55px; height: 55px; border-radius: 50%; overflow: hidden; border: 2px solid var(--accent); background: #fff; box-shadow: 0 4px 10px rgba(212,175,55,0.4); }
         .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -23,7 +27,11 @@
         .input-row { display: flex; gap: 8px; align-items: center; }
         input { flex: 1; padding: 12px; border: none; border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
         .add-btn { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 700; }
+        
         .task-item { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 10px; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .btn-edit { background: none; border: none; color: var(--accent); font-size: 18px; margin-right: 10px; }
+        
+        .edit-panel { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; flex-direction: column; gap: 8px; width: 100%; }
     </style>
 </head>
 <body id="mainBody">
@@ -31,12 +39,11 @@
     <div class="header">
         <div style="display:flex; align-items:center; gap:12px;">
             <div class="avatar-box">
-                <!-- Avatar Logo Đức Tú -->
                 <img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" alt="Đức Tú Logo">
             </div>
             <div>
                 <b style="font-size: 18px; color: #B8860B;">ĐỨC TÚ EVENT</b><br>
-                <small style="color:var(--sub); font-size:11px">Quản lý sự kiện chuyên nghiệp</small>
+                <small style="color:var(--sub); font-size:11px">Quản lý lịch sự kiện</small>
             </div>
         </div>
         <button onclick="toggleDark()" style="background:none; border:none; font-size:22px;">🌓</button>
@@ -53,38 +60,60 @@
     <div id="taskList"></div>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('vFinal_tasks')) || [];
-        let isDark = localStorage.getItem('vFinal_dark') === 'true';
+        let tasks = JSON.parse(localStorage.getItem('vULTRA_tasks')) || [];
+        let isDark = localStorage.getItem('vULTRA_dark') === 'true';
 
         function addTask() {
             const n = document.getElementById('taskName').value, d = document.getElementById('taskDate').value;
             if(!n || !d) return;
             tasks.push({ id: Date.now(), n, d });
-            localStorage.setItem('vFinal_tasks', JSON.stringify(tasks));
-            render();
+            save();
             document.getElementById('taskName').value = '';
+        }
+
+        function save() {
+            localStorage.setItem('vULTRA_tasks', JSON.stringify(tasks));
+            render();
         }
 
         function render() {
             const list = document.getElementById('taskList');
             tasks.sort((a,b) => new Date(a.d) - new Date(b.d));
             list.innerHTML = tasks.map(t => `
-                <div class="task-item">
-                    <div>
+                <div class="task-item" style="flex-wrap: wrap;">
+                    <div style="flex: 1;">
                         <b style="color:#B8860B;">${t.n}</b><br>
                         <small style="color:var(--sub);">${new Date(t.d).toLocaleString('vi-VN')}</small>
                     </div>
-                    <button onclick="del(${t.id})" style="border:none; background:none; color:red; font-weight:bold; font-size:16px;">×</button>
+                    <div>
+                        <button class="btn-edit" onclick="toggleEdit(${t.id})">⚙️</button>
+                        <button onclick="del(${t.id})" style="border:none; background:none; color:red; font-size:20px;">×</button>
+                    </div>
+                    <div class="edit-panel" id="edit-${t.id}">
+                        <input type="datetime-local" id="newDate-${t.id}" value="${t.d}" style="background:var(--bg);">
+                        <button class="add-btn" style="padding:8px;" onclick="updateDate(${t.id})">XÁC NHẬN ĐỔI</button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function del(id) { if(confirm('Xóa?')) { tasks = tasks.filter(x => x.id !== id); localStorage.setItem('vFinal_tasks', JSON.stringify(tasks)); render(); } }
+        function toggleEdit(id) {
+            const el = document.getElementById(`edit-${id}`);
+            el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function updateDate(id) {
+            const newD = document.getElementById(`newDate-${id}`).value;
+            tasks = tasks.map(t => t.id === id ? {...t, d: newD} : t);
+            save();
+        }
+
+        function del(id) { if(confirm('Xóa?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
         
         function toggleDark() { 
             isDark = !isDark; 
             document.body.classList.toggle('dark-mode', isDark);
-            localStorage.setItem('vFinal_dark', isDark);
+            localStorage.setItem('vULTRA_dark', isDark);
         }
 
         window.onload = () => {
