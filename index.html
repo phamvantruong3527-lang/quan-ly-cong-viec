@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Work Tracker Luxury</title>
+    <title>Work Tracker Pro</title>
     <style>
         :root {
             --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93;
@@ -13,32 +13,30 @@
         }
         body.dark-mode { --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
         
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 15px 30px 15px; transition: 0.3s; overflow-x: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 15px 30px 15px; transition: 0.3s; }
         
         .header { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; margin-bottom: 10px; }
-        #avatarContainer { width: 45px; height: 45px; border-radius: 14px; overflow: hidden; border: 2px solid var(--accent); background: #fff; flex-shrink: 0; }
+        #avatarContainer { width: 45px; height: 45px; border-radius: 14px; overflow: hidden; border: 2px solid var(--accent); background: #fff; }
         #avatarImg { width: 100%; height: 100%; object-fit: cover; }
         
         .card { background: var(--card); padding: 12px; border-radius: 22px; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .total-box { background: #1C1C1E; color: white; display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; }
         .total-amount { font-size: 26px; font-weight: 800; color: var(--accent); }
 
-        /* Hàng nhập liệu siêu tối giản */
         .input-row { display: flex; gap: 6px; align-items: center; }
         input { flex: 1; padding: 12px; border: none; border-radius: 12px; background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
-        .date-input { width: 110px; flex-shrink: 0; font-size: 12px; }
-        .add-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px 15px; font-weight: 700; font-size: 13px; flex-shrink: 0; }
-        
-        .lunar-preview { font-size: 11px; font-weight: 800; color: var(--accent); margin-top: 8px; padding-left: 5px; display: none; }
+        .date-input { width: 110px; flex-shrink: 0; font-size: 11px; }
+        .add-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 12px 15px; font-weight: 700; font-size: 13px; }
 
-        .task-item { background: var(--card); padding: 12px 15px; border-radius: 20px; margin-bottom: 8px; border-left: 5px solid var(--accent); display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.3s ease; }
+        .task-item { background: var(--card); padding: 12px 15px; border-radius: 20px; margin-bottom: 8px; border-left: 5px solid var(--accent); transition: 0.3s; }
         .task-item.done { border-left-color: var(--success); opacity: 0.8; }
         
-        .btn-action { padding: 8px 12px; font-size: 11px; border-radius: 10px; border: none; font-weight: 700; margin-left: 4px; background: var(--bg); color: var(--text); }
-        .notif-btn { background: none; border: none; font-size: 20px; position: relative; padding: 0; }
+        .task-main { display: flex; justify-content: space-between; align-items: center; }
+        .edit-zone { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--sub); display: none; gap: 5px; }
+        
+        .btn-action { padding: 8px 10px; font-size: 11px; border-radius: 10px; border: none; font-weight: 700; background: var(--bg); color: var(--text); }
+        .notif-btn { background: none; border: none; font-size: 20px; position: relative; }
         .dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; position: absolute; top: -2px; right: -2px; display: none; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body id="mainBody">
@@ -61,64 +59,50 @@
     </div>
 
     <div class="card total-box">
-        <small style="font-size:10px; font-weight:800; opacity:0.6; letter-spacing:1px;">THU NHẬP TUẦN</small>
+        <small style="font-size:10px; font-weight:800; opacity:0.6;">THU NHẬP TUẦN</small>
         <span class="total-amount" id="totalDisplay">0</span>
     </div>
 
     <div class="card">
         <div class="input-row">
-            <input type="text" id="taskName" placeholder="Việc cần làm...">
-            <input type="datetime-local" id="taskDate" class="date-input" onchange="showLunar()">
+            <input type="text" id="taskName" placeholder="Việc mới...">
+            <input type="datetime-local" id="taskDate" class="date-input">
             <button class="add-btn" onclick="addTask()">LƯU</button>
         </div>
-        <div id="lunarPreview" class="lunar-preview"></div>
     </div>
 
     <div id="taskList"></div>
 
     <script>
-        // SERVICE WORKER & NOTIFICATION
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => console.log("Ready."));
-        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
         function testNotif() {
             Notification.requestPermission().then(perm => {
                 if (perm === 'granted') {
-                    navigator.serviceWorker.ready.then(reg => {
-                        reg.active.postMessage({
-                            type: 'SHOW_NOTIFICATION',
-                            title: 'Work Tracker',
-                            body: 'Thông báo đã bật thành công sếp ơi! 🚀'
-                        });
-                        document.getElementById('notifDot').style.display = 'none';
-                    });
-                } else {
-                    alert("Sếp chưa cho phép thông báo trong cài đặt trình duyệt!");
+                    sendNotif('Work Tracker', 'Thông báo đã sẵn sàng! 🚀');
+                    document.getElementById('notifDot').style.display = 'none';
                 }
             });
         }
 
-        // DATA LOGIC
-        let tasks = JSON.parse(localStorage.getItem('vFinal_tasks')) || [];
-        let cfg = JSON.parse(localStorage.getItem('vFinal_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false };
+        function sendNotif(title, body) {
+            if (Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body });
+                });
+            }
+        }
+
+        let tasks = JSON.parse(localStorage.getItem('v9_tasks')) || [];
+        let cfg = JSON.parse(localStorage.getItem('v9_cfg')) || { name: "Sếp Tổng", avatar: "", dark: false };
 
         function getLunar(str) {
             const d = new Date(str);
-            const baseD = new Date(2026, 4, 18); // 18/5/2026
+            const baseD = new Date(2026, 4, 18);
             const diff = Math.floor((d - baseD) / 86400000);
             let ld = 2 + diff, lm = 4;
             while(ld > 29) { ld -= 29; lm++; } while(ld < 1) { ld += 29; lm--; }
             return `${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} (Âm)`;
-        }
-
-        function showLunar() {
-            const v = document.getElementById('taskDate').value;
-            if(v) {
-                const lp = document.getElementById('lunarPreview');
-                lp.style.display = 'block';
-                lp.innerText = "🌙 Lịch âm: " + getLunar(v);
-            }
         }
 
         function addTask() {
@@ -126,55 +110,71 @@
             if(!n || !d) return;
             tasks.push({ id: Date.now(), n, d, l: getLunar(d), p: 0, s: 'p', doneAt: null });
             save();
-            if (Notification.permission === 'granted') {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title: 'Đã lưu việc', body: n });
-                });
-            }
+            sendNotif('Đã thêm lịch', n);
             document.getElementById('taskName').value = '';
-            document.getElementById('lunarPreview').style.display = 'none';
         }
 
-        function save() { localStorage.setItem('vFinal_tasks', JSON.stringify(tasks)); render(); }
+        function save() { localStorage.setItem('v9_tasks', JSON.stringify(tasks)); render(); }
 
         function render() {
             const list = document.getElementById('taskList'), display = document.getElementById('totalDisplay');
             let total = 0, limit = new Date(); limit.setDate(limit.getDate() - 7);
             tasks.sort((a,b) => new Date(a.d) - new Date(b.d));
+            
             list.innerHTML = tasks.map(t => {
                 const isD = t.s === 'done';
                 if(isD && new Date(t.doneAt) >= limit) total += t.p;
                 return `
-                <div class="task-item ${isD ? 'done' : ''}">
-                    <div style="max-width: 65%;">
-                        <b style="font-size:14px;">${t.n}</b><br>
-                        <span style="color:var(--accent); font-size:11px; font-weight:800;">${t.l}</span>
-                        <small style="color:var(--sub); font-size:10px; margin-left:5px;">${new Date(t.d).getHours()}:${String(new Date(t.d).getMinutes()).padStart(2,'0')}</small>
+                <div class="task-item ${isD ? 'done' : ''}" id="item-${t.id}">
+                    <div class="task-main">
+                        <div style="max-width: 60%;">
+                            <b style="font-size:14px;">${t.n}</b><br>
+                            <span style="color:var(--accent); font-size:11px; font-weight:800;">${t.l}</span>
+                            <small style="color:var(--sub); font-size:10px; margin-left:5px;">${new Date(t.d).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}</small>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:4px">
+                            ${isD ? `<b style="color:var(--success); font-size:12px;">+${t.p.toLocaleString()}</b>` : ''}
+                            <button class="btn-action" onclick="pay(${t.id})">${isD ? 'Sửa tiền' : 'Xong'}</button>
+                            <button class="btn-action" onclick="toggleEdit(${t.id})">⚙️</button>
+                            <button class="btn-action" style="color:var(--danger)" onclick="del(${t.id})">X</button>
+                        </div>
                     </div>
-                    <div style="display:flex; align-items:center">
-                        ${isD ? `<b style="color:var(--success); font-size:12px; margin-right:5px;">+${t.p.toLocaleString()}</b>` : ''}
-                        <button class="btn-action" onclick="pay(${t.id})">${isD ? 'Sửa' : 'Xong'}</button>
-                        <button class="btn-action" style="color:var(--danger)" onclick="del(${t.id})">X</button>
+                    <div class="edit-zone" id="edit-${t.id}">
+                        <input type="datetime-local" id="newDate-${t.id}" value="${t.d}" style="background:var(--card); border:1px solid var(--sub)">
+                        <button class="add-btn" style="padding:8px" onclick="updateDate(${t.id})">Cập nhật</button>
                     </div>
                 </div>`;
             }).join('');
             display.innerText = total.toLocaleString('vi-VN');
         }
 
+        function toggleEdit(id) {
+            const zone = document.getElementById(`edit-${id}`);
+            zone.style.display = zone.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function updateDate(id) {
+            const newD = document.getElementById(`newDate-${id}`).value;
+            if(!newD) return;
+            tasks = tasks.map(t => t.id === id ? {...t, d: newD, l: getLunar(newD)} : t);
+            save();
+            sendNotif('Đã cập nhật ngày', tasks.find(t => t.id === id).n);
+        }
+
         function pay(id) {
-            const p = prompt("Số tiền công (VNĐ):");
+            const p = prompt("Tiền nhận được:");
             if(p !== null) {
                 tasks = tasks.map(x => x.id === id ? {...x, p: parseFloat(p) || 0, s: 'done', doneAt: new Date().toISOString()} : x);
                 save();
             }
         }
-        function del(id) { if(confirm('Xóa việc này?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
-        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('vFinal_cfg', JSON.stringify(cfg)); }
+        function del(id) { if(confirm('Xóa?')) { tasks = tasks.filter(x => x.id !== id); save(); } }
+        function toggleDark() { cfg.dark = !cfg.dark; applyTheme(); localStorage.setItem('v9_cfg', JSON.stringify(cfg)); }
         function applyTheme() { document.getElementById('mainBody').className = cfg.dark ? 'dark-mode' : ''; }
-        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('vFinal_cfg', JSON.stringify(cfg)); } }
+        function editName() { const n = prompt("Tên sếp:", cfg.name); if(n) { cfg.name = n; document.getElementById('userName').innerText = n; localStorage.setItem('v9_cfg', JSON.stringify(cfg)); } }
         function uploadImg(e) {
             const r = new FileReader();
-            r.onload = () => { cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result; localStorage.setItem('vFinal_cfg', JSON.stringify(cfg)); };
+            r.onload = () => { cfg.avatar = r.result; document.getElementById('avatarImg').src = r.result; localStorage.setItem('v9_cfg', JSON.stringify(cfg)); };
             r.readAsDataURL(e.target.files[0]);
         }
 
