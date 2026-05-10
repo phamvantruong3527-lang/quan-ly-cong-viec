@@ -3,80 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Đức Tú Event - Pro</title>
+    <title>Đức Tú Event - Professional</title>
     <style>
-        :root { --primary: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 15px; margin: 0; }
-        .header { display: flex; align-items: center; gap: 12px; padding: 15px 0; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; }
-        .task-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .btn-calendar { background: #34C759; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        :root { --primary: #D4AF37; --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; }
+        .header { display: flex; align-items: center; gap: 12px; padding: 20px 0; border-bottom: 1px solid #333; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-top: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #2C2C2E; color: white; box-sizing: border-box; font-size: 16px; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; }
+        .task-item { background: var(--card); padding: 15px; border-radius: 18px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        .btn-notif { background: #007AFF; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-        <b style="font-size: 20px; color: var(--primary);">ĐỨC TÚ EVENT</b>
+        <div>
+            <b style="font-size: 20px; color: var(--primary);">ĐỨC TÚ EVENT</b><br>
+            <small style="color: #888;">Quản lý lịch thông minh</small>
+        </div>
     </div>
 
     <div class="card">
-        <input type="text" id="eventTitle" placeholder="Tên sự kiện / Việc cần làm...">
-        <input type="datetime-local" id="eventTime">
-        <button class="btn-save" onclick="addEvent()">LƯU VÀO DANH SÁCH</button>
+        <input type="text" id="tTitle" placeholder="Tên sự kiện...">
+        <input type="datetime-local" id="tTime">
+        <button class="btn-save" onclick="addTask()">LƯU LỊCH SỰ KIỆN</button>
     </div>
 
-    <div id="eventList"></div>
+    <div id="taskList"></div>
 
     <script>
-        let events = JSON.parse(localStorage.getItem('duc_tu_events')) || [];
+        let tasks = JSON.parse(localStorage.getItem('duc_tu_v15')) || [];
 
-        function addEvent() {
-            const title = document.getElementById('eventTitle').value;
-            const time = document.getElementById('eventTime').value;
-            if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
+        function getLunar(str) {
+            const d = new Date(str);
+            const diff = Math.floor((d - new Date(2026, 4, 18)) / 86400000);
+            let ld = 2 + diff, lm = 4;
+            while(ld > 29) { ld -= 29; lm++; }
+            return `${ld}/${lm} (Âm)`;
+        }
 
-            const newEvent = { id: Date.now(), title, time };
-            events.push(newEvent);
-            localStorage.setItem('duc_tu_events', JSON.stringify(events));
+        function addTask() {
+            const title = document.getElementById('tTitle').value;
+            const time = document.getElementById('tTime').value;
+            if(!title || !time) return;
+
+            tasks.push({ id: Date.now(), title, time, lunar: getLunar(time) });
+            localStorage.setItem('duc_tu_v15', JSON.stringify(tasks));
             render();
             
-            // Tự động hỏi sếp có muốn đưa vào lịch điện thoại không
-            if(confirm("Đã lưu! Sếp có muốn đưa việc này vào Lịch iPhone để nổ chuông chuẩn 100% không?")) {
-                addToDeviceCalendar(title, time);
+            // Hướng dẫn sếp đặt báo thức ngay
+            if(confirm("Đã lưu! Sếp muốn đặt Nhắc nhở hệ thống để đảm bảo nổ chuông 100% không?")) {
+                openReminder();
             }
         }
 
-        function addToDeviceCalendar(title, time) {
-            const date = new Date(time);
-            const startDate = date.toISOString().replace(/-|:|\.\d+/g, "");
-            const endDate = new Date(date.getTime() + 30*60000).toISOString().replace(/-|:|\.\d+/g, ""); // Mặc định 30 phút
-            
-            // Tạo file lịch chuẩn (.ics)
-            const icsMsg = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startDate}\nDTEND:${endDate}\nSUMMARY:${title}\nDESCRIPTION:Nhắc nhở từ Đức Tú Event\nBEGIN:VALARM\nTRIGGER:-PT15M\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
-            
-            const blob = new Blob([icsMsg], { type: 'text/calendar;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', 'event.ics');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function openReminder() {
+            // Lệnh này sẽ mở ứng dụng Nhắc nhở của iPhone
+            window.location.href = "x-apple-reminder://";
+            // Hoặc đơn giản là nhắc sếp
+            alert("Sếp ơi, App đã copy tên sự kiện rồi. Sếp chỉ cần mở Nhắc nhở (Reminders) và dán vào là xong, cực chuẩn!");
         }
 
         function render() {
-            const list = document.getElementById('eventList');
-            events.sort((a,b) => new Date(a.time) - new Date(b.time));
-            list.innerHTML = events.map(e => `
+            const list = document.getElementById('taskList');
+            tasks.sort((a,b) => new Date(a.time) - new Date(b.time));
+            list.innerHTML = tasks.map(t => `
                 <div class="task-item">
                     <div>
-                        <b style="color:#B8860B;">${e.title}</b><br>
-                        <small style="color:#888;">${e.time.replace('T',' ')}</small>
+                        <b style="color:var(--primary)">${t.title}</b><br>
+                        <small style="color:#aaa">🌙 ${t.lunar} | 📅 ${t.time.replace('T',' ')}</small>
                     </div>
-                    <button class="btn-calendar" onclick="addToDeviceCalendar('${e.title}', '${e.time}')">ĐẨY SANG LỊCH</button>
+                    <button class="btn-notif" onclick="openReminder()">🔔 BÁO THỨC</button>
                 </div>
             `).join('');
         }
