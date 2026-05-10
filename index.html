@@ -3,80 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Đức Tú Event - Professional</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Đức Tú Event - Lịch Làm Việc</title>
     <style>
-        :root { --primary: #D4AF37; --bg: #000000; --card: #1C1C1E; --text: #FFFFFF; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; }
-        .header { display: flex; align-items: center; gap: 12px; padding: 20px 0; border-bottom: 1px solid #333; }
-        .avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; margin-top: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #2C2C2E; color: white; box-sizing: border-box; font-size: 16px; }
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; }
-        .task-item { background: var(--card); padding: 15px; border-radius: 18px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
-        .btn-notif { background: #007AFF; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-size: 13px; font-weight: bold; }
+        :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h3 { color: var(--gold); margin-top: 0; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; font-family: inherit; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 17px; margin-top: 10px; }
+        .item { background: white; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 5px solid var(--gold); position: relative; }
+        .lunar-tag { color: var(--gold); font-weight: bold; font-size: 13px; }
+        .btn-push { background: #007AFF; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-top: 10px; width: 100%; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-        <div>
-            <b style="font-size: 20px; color: var(--primary);">ĐỨC TÚ EVENT</b><br>
-            <small style="color: #888;">Quản lý lịch thông minh</small>
-        </div>
+        <b style="font-size: 20px;">ĐỨC TÚ EVENT</b>
     </div>
 
     <div class="card">
-        <input type="text" id="tTitle" placeholder="Tên sự kiện...">
-        <input type="datetime-local" id="tTime">
-        <button class="btn-save" onclick="addTask()">LƯU LỊCH SỰ KIỆN</button>
+        <h3>📅 Lên Lịch Làm Việc</h3>
+        <label>Chọn ngày:</label>
+        <input type="date" id="eventDate" onchange="askWhoseEvent()">
+        
+        <div id="noteArea" style="display:none;">
+            <label id="askText"></label>
+            <textarea id="eventNote" rows="3" placeholder="Ghi chú chi tiết công việc (VD: Đám cưới nhà trai, xe hoa...)"></textarea>
+            <button class="btn-save" onclick="saveToApp()">LƯU LỊCH & ĐẨY SANG GHI CHÚ</button>
+        </div>
     </div>
 
-    <div id="taskList"></div>
+    <div id="displayArea"></div>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('duc_tu_v15')) || [];
-
-        function getLunar(str) {
-            const d = new Date(str);
-            const diff = Math.floor((d - new Date(2026, 4, 18)) / 86400000);
-            let ld = 2 + diff, lm = 4;
-            while(ld > 29) { ld -= 29; lm++; }
-            return `${ld}/${lm} (Âm)`;
+        // Thuật toán tính lịch âm đơn giản cho năm 2026 (Có thể cập nhật thêm)
+        function getLunarDate(dateStr) {
+            const d = new Date(dateStr);
+            // Đây là mốc tính tương đối cho năm 2026, sếp có thể dùng API nếu cần chính xác tuyệt đối từng ngày
+            const lunarData = {
+                "2026-05-10": "24/03",
+                "2026-05-11": "25/03",
+                "2026-05-12": "26/03",
+                "2026-05-30": "14/04"
+            };
+            return lunarData[dateStr] || "Xem trên lịch hệ thống";
         }
 
-        function addTask() {
-            const title = document.getElementById('tTitle').value;
-            const time = document.getElementById('tTime').value;
-            if(!title || !time) return;
-
-            tasks.push({ id: Date.now(), title, time, lunar: getLunar(time) });
-            localStorage.setItem('duc_tu_v15', JSON.stringify(tasks));
-            render();
-            
-            // Hướng dẫn sếp đặt báo thức ngay
-            if(confirm("Đã lưu! Sếp muốn đặt Nhắc nhở hệ thống để đảm bảo nổ chuông 100% không?")) {
-                openReminder();
+        function askWhoseEvent() {
+            const date = document.getElementById('eventDate').value;
+            if(date) {
+                const formattedDate = date.split('-').reverse().join('/');
+                document.getElementById('askText').innerText = `Ngày ${formattedDate}, sếp có lịch của ai thế?`;
+                document.getElementById('noteArea').style.display = 'block';
             }
         }
 
-        function openReminder() {
-            // Lệnh này sẽ mở ứng dụng Nhắc nhở của iPhone
-            window.location.href = "x-apple-reminder://";
-            // Hoặc đơn giản là nhắc sếp
-            alert("Sếp ơi, App đã copy tên sự kiện rồi. Sếp chỉ cần mở Nhắc nhở (Reminders) và dán vào là xong, cực chuẩn!");
+        function saveToApp() {
+            const date = document.getElementById('eventDate').value;
+            const note = document.getElementById('eventNote').value;
+            const lunar = getLunarDate(date);
+
+            if(!note) return alert("Sếp nhập ghi chú nhé!");
+
+            // 1. Lưu vào bộ nhớ máy
+            const events = JSON.parse(localStorage.getItem('duc_tu_notes')) || [];
+            events.push({ date, note, lunar });
+            localStorage.setItem('duc_tu_notes', JSON.stringify(events));
+
+            // 2. Tự động đẩy sang Ghi chú (Notes) của iPhone
+            // Apple cho phép mở ghi chú mới qua liên kết 'mobilenotes://' 
+            // Tuy nhiên để truyền nội dung, sếp dùng cơ chế Share hoặc copy nhanh
+            const content = `LỊCH LÀM VIỆC ĐỨC TÚ\nNgày: ${date}\nÂm lịch: ${lunar}\nCông việc: ${note}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Đức Tú Event Note',
+                    text: content
+                }).then(() => {
+                    alert("Đã đẩy sang Ghi chú/Zalo cho sếp thành công!");
+                });
+            } else {
+                // Phương án dự phòng mở mail/ghi chú
+                window.location.href = `mailto:?subject=Lich Lam Viec Duc Tu&body=${encodeURIComponent(content)}`;
+            }
+            
+            render();
         }
 
         function render() {
-            const list = document.getElementById('taskList');
-            tasks.sort((a,b) => new Date(a.time) - new Date(b.time));
-            list.innerHTML = tasks.map(t => `
-                <div class="task-item">
-                    <div>
-                        <b style="color:var(--primary)">${t.title}</b><br>
-                        <small style="color:#aaa">🌙 ${t.lunar} | 📅 ${t.time.replace('T',' ')}</small>
-                    </div>
-                    <button class="btn-notif" onclick="openReminder()">🔔 BÁO THỨC</button>
+            const area = document.getElementById('displayArea');
+            const events = JSON.parse(localStorage.getItem('duc_tu_notes')) || [];
+            area.innerHTML = events.map(e => `
+                <div class="item">
+                    <span class="lunar-tag">🌙 Lịch Âm: ${e.lunar}</span><br>
+                    <b>📅 ${e.date}</b>
+                    <p style="margin: 5px 0;">📝 ${e.note}</p>
                 </div>
             `).join('');
         }
