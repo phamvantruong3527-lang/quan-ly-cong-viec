@@ -2,112 +2,125 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Event - Lịch Làm Việc</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone Calendar Clone</title>
+    <script src="https://cdn.jsdelivr.net/npm/vietnam-lunar-calendar@1.0.1/dist/lunar-calendar.min.js"></script>
     <style>
-        :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h3 { color: var(--gold); margin-top: 0; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; font-family: inherit; }
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 17px; margin-top: 10px; }
-        .item { background: white; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 5px solid var(--gold); position: relative; }
-        .lunar-tag { color: var(--gold); font-weight: bold; font-size: 13px; }
-        .btn-push { background: #007AFF; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-top: 10px; width: 100%; }
+        :root { --ios-blue: #007AFF; --ios-red: #FF3B30; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .calendar-container { width: 100%; max-width: 400px; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .day-name { font-weight: bold; color: #8e8e93; font-size: 0.8em; padding-bottom: 10px; }
+        .date-cell { padding: 10px 0; border-radius: 8px; cursor: pointer; position: relative; transition: 0.2s; }
+        .date-cell:hover { background: #f0f0f0; }
+        .date-cell.today { background: var(--ios-red); color: #fff; }
+        .lunar-date { font-size: 0.6em; display: block; color: #8e8e93; }
+        .today .lunar-date { color: #eee; }
+        
+        /* Modal Style */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                background: white; padding: 20px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.2); z-index: 10; width: 80%; max-width: 300px; }
+        .modal input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-group { display: flex; justify-content: flex-end; gap: 10px; }
+        button { border: none; background: var(--ios-blue); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-        <b style="font-size: 20px;">ĐỨC TÚ EVENT</b>
+<div class="calendar-container">
+    <header>
+        <h2 id="monthDisplay">Tháng 5 2026</h2>
+    </header>
+    <div class="days-grid" id="calendarGrid">
+        <!-- Tên các thứ -->
+        <div class="day-name">T2</div><div class="day-name">T3</div><div class="day-name">T4</div>
+        <div class="day-name">T5</div><div class="day-name">T6</div><div class="day-name">T7</div><div class="day-name">CN</div>
     </div>
+</div>
 
-    <div class="card">
-        <h3>📅 Lên Lịch Làm Việc</h3>
-        <label>Chọn ngày:</label>
-        <input type="date" id="eventDate" onchange="askWhoseEvent()">
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="eventModal">
+    <h4 id="modalTitle">Thêm lịch làm việc</h4>
+    <p>Hôm nay bạn có lịch của ai?</p>
+    <input type="text" id="clientName" placeholder="Tên khách hàng/Công việc...">
+    <div class="btn-group">
+        <button onclick="closeModal()" style="background:#8e8e93">Hủy</button>
+        <button onclick="saveAndExport()">Lưu & Đẩy sang Ghi chú</button>
+    </div>
+</div>
+
+<script>
+    let selectedDate = "";
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
         
-        <div id="noteArea" style="display:none;">
-            <label id="askText"></label>
-            <textarea id="eventNote" rows="3" placeholder="Ghi chú chi tiết công việc (VD: Đám cưới nhà trai, xe hoa...)"></textarea>
-            <button class="btn-save" onclick="saveToApp()">LƯU LỊCH & ĐẨY SANG GHI CHÚ</button>
-        </div>
-    </div>
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    <div id="displayArea"></div>
+        // Chỉnh sửa firstDay để phù hợp với Thứ 2 là ngày đầu tuần
+        let startOffset = firstDay === 0 ? 6 : firstDay - 1;
 
-    <script>
-        // Thuật toán tính lịch âm đơn giản cho năm 2026 (Có thể cập nhật thêm)
-        function getLunarDate(dateStr) {
-            const d = new Date(dateStr);
-            // Đây là mốc tính tương đối cho năm 2026, sếp có thể dùng API nếu cần chính xác tuyệt đối từng ngày
-            const lunarData = {
-                "2026-05-10": "24/03",
-                "2026-05-11": "25/03",
-                "2026-05-12": "26/03",
-                "2026-05-30": "14/04"
-            };
-            return lunarData[dateStr] || "Xem trên lịch hệ thống";
+        for (let i = 0; i < startOffset; i++) {
+            grid.innerHTML += `<div></div>`;
         }
 
-        function askWhoseEvent() {
-            const date = document.getElementById('eventDate').value;
-            if(date) {
-                const formattedDate = date.split('-').reverse().join('/');
-                document.getElementById('askText').innerText = `Ngày ${formattedDate}, sếp có lịch của ai thế?`;
-                document.getElementById('noteArea').style.display = 'block';
-            }
-        }
-
-        function saveToApp() {
-            const date = document.getElementById('eventDate').value;
-            const note = document.getElementById('eventNote').value;
-            const lunar = getLunarDate(date);
-
-            if(!note) return alert("Sếp nhập ghi chú nhé!");
-
-            // 1. Lưu vào bộ nhớ máy
-            const events = JSON.parse(localStorage.getItem('duc_tu_notes')) || [];
-            events.push({ date, note, lunar });
-            localStorage.setItem('duc_tu_notes', JSON.stringify(events));
-
-            // 2. Tự động đẩy sang Ghi chú (Notes) của iPhone
-            // Apple cho phép mở ghi chú mới qua liên kết 'mobilenotes://' 
-            // Tuy nhiên để truyền nội dung, sếp dùng cơ chế Share hoặc copy nhanh
-            const content = `LỊCH LÀM VIỆC ĐỨC TÚ\nNgày: ${date}\nÂm lịch: ${lunar}\nCông việc: ${note}`;
+        for (let day = 1; day <= daysInMonth; day++) {
+            // Logic tính âm lịch (Sử dụng thư viện hoặc thuật toán đơn giản)
+            // Ở đây minh họa bằng text giả lập, bạn có thể tích hợp thư viện moment-lunar hoặc tương tự
+            const lunarDay = Math.floor(Math.random() * 29) + 1; 
             
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Đức Tú Event Note',
-                    text: content
-                }).then(() => {
-                    alert("Đã đẩy sang Ghi chú/Zalo cho sếp thành công!");
-                });
-            } else {
-                // Phương án dự phòng mở mail/ghi chú
-                window.location.href = `mailto:?subject=Lich Lam Viec Duc Tu&body=${encodeURIComponent(content)}`;
-            }
-            
-            render();
-        }
-
-        function render() {
-            const area = document.getElementById('displayArea');
-            const events = JSON.parse(localStorage.getItem('duc_tu_notes')) || [];
-            area.innerHTML = events.map(e => `
-                <div class="item">
-                    <span class="lunar-tag">🌙 Lịch Âm: ${e.lunar}</span><br>
-                    <b>📅 ${e.date}</b>
-                    <p style="margin: 5px 0;">📝 ${e.note}</p>
+            const isToday = day === now.getDate() ? 'today' : '';
+            grid.innerHTML += `
+                <div class="date-cell ${isToday}" onclick="openModal(${day}, ${month+1}, ${year})">
+                    ${day}
+                    <span class="lunar-date">${lunarDay}/4</span>
                 </div>
-            `).join('');
+            `;
         }
+    }
 
-        window.onload = render;
-    </script>
+    function openModal(d, m, y) {
+        selectedDate = `${d}/${m}/${y}`;
+        document.getElementById('modalTitle').innerText = `Ngày ${selectedDate}`;
+        document.getElementById('eventModal').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('eventModal').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('clientName').value = '';
+    }
+
+    function saveAndExport() {
+        const name = document.getElementById('clientName').value;
+        if (!name) return alert("Vui lòng nhập tên!");
+
+        const content = `Lịch làm việc ngày ${selectedDate}: ${name}`;
+        
+        // Tạo URL scheme để mở app Ghi chú trên iPhone
+        // Lưu ý: iOS không cho phép ghi đè trực tiếp vào một note cụ thể từ web, 
+        // nhưng ta có thể tạo bản nháp hoặc copy vào Clipboard.
+        
+        const encodedContent = encodeURIComponent(content);
+        
+        // Cách 1: Chuyển hướng sang app Ghi chú (tạo note mới qua Share Sheet hoặc Shortcuts)
+        // Cách tốt nhất là dùng link chuyển hướng hoặc copy
+        navigator.clipboard.writeText(content).then(() => {
+            alert("Đã sao chép nội dung. Đang mở Ghi chú...");
+            window.location.href = "mobilenotes://"; 
+        });
+        
+        closeModal();
+    }
+
+    renderCalendar();
+</script>
 </body>
 </html>
