@@ -1,19 +1,14 @@
-// File này chạy ngầm để đánh thức thông báo
-self.addEventListener('install', (event) => {
-    self.skipWaiting();
-});
+self.addEventListener('install', (e) => self.skipWaiting());
 
-self.addEventListener('activate', (event) => {
-    event.waitUntil(clients.claim());
-});
-
-// Lắng nghe lệnh hiển thị thông báo từ App
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-        self.registration.showNotification(event.data.title, {
-            body: event.data.body,
-            icon: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-            badge: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
-        });
+self.addEventListener('message', (e) => {
+    if (e.data.type === 'SCHEDULE_NOTIFICATION') {
+        const delay = e.data.delay;
+        setTimeout(() => {
+            self.registration.showNotification("🔔 ĐẾN GIỜ RỒI SẾP!", {
+                body: e.data.taskName,
+                icon: "https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg",
+                vibrate: [200, 100, 200]
+            });
+        }, delay);
     }
 });
