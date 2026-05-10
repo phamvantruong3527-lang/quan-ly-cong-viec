@@ -3,76 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Pro</title>
+    <title>Đức Tú Event - Pro</title>
     <style>
-        :root { --primary: #D4AF37; --bg: #F2F2F7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; text-align: center; }
-        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 10px; overflow: hidden; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; }
-        #status { font-size: 12px; color: #34C759; margin-bottom: 10px; display: none; }
+        :root { --primary: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 15px; margin: 0; }
+        .header { display: flex; align-items: center; gap: 12px; padding: 15px 0; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .task-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .btn-calendar { background: #34C759; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="avatar">
-        <img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%">
+    <div class="header">
+        <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
+        <b style="font-size: 20px; color: var(--primary);">ĐỨC TÚ EVENT</b>
     </div>
-    <h2 style="color:var(--primary); margin-bottom: 5px;">ĐỨC TÚ EVENT</h2>
-    <div id="status">● Hệ thống chạy ngầm đã kích hoạt</div>
 
     <div class="card">
-        <button class="btn" style="background:#007AFF; margin-bottom:15px;" onclick="enableNotif()">1. BẬT THÔNG BÁO HỆ THỐNG</button>
-        <input type="text" id="taskName" placeholder="Tên việc cần báo...">
-        <input type="datetime-local" id="taskDate">
-        <button class="btn" onclick="saveTask()">2. LƯU LỊCH CHẠY NGẦM</button>
+        <input type="text" id="eventTitle" placeholder="Tên sự kiện / Việc cần làm...">
+        <input type="datetime-local" id="eventTime">
+        <button class="btn-save" onclick="addEvent()">LƯU VÀO DANH SÁCH</button>
     </div>
 
+    <div id="eventList"></div>
+
     <script>
-        let swReg = null;
+        let events = JSON.parse(localStorage.getItem('duc_tu_events')) || [];
 
-        // Đăng ký Service Worker khi mở app
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(reg => {
-                swReg = reg;
-                document.getElementById('status').style.display = 'block';
-            });
-        }
+        function addEvent() {
+            const title = document.getElementById('eventTitle').value;
+            const time = document.getElementById('eventTime').value;
+            if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
 
-        async function enableNotif() {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                alert("Sếp đã cấp quyền! Thông báo sẽ nổ kể cả khi tắt app.");
-            } else {
-                alert("Sếp cần vào Cài đặt iPhone để cho phép thông báo Safari.");
-            }
-        }
-
-        function saveTask() {
-            const name = document.getElementById('taskName').value;
-            const dateValue = document.getElementById('taskDate').value;
+            const newEvent = { id: Date.now(), title, time };
+            events.push(newEvent);
+            localStorage.setItem('duc_tu_events', JSON.stringify(events));
+            render();
             
-            if (!name || !dateValue) return alert("Sếp điền đủ thông tin nhé!");
-
-            const triggerTime = new Date(dateValue).getTime();
-            const now = Date.now();
-
-            if (triggerTime <= now) return alert("Sếp chọn giờ ở tương lai nhé!");
-
-            // Gửi thông tin sang Service Worker để nó canh giờ
-            if (swReg && swReg.active) {
-                swReg.active.postMessage({
-                    type: 'SET_ALARM',
-                    taskName: name,
-                    triggerTime: triggerTime
-                });
-                alert("Đã cài báo thức ngầm cho việc: " + name);
-            } else {
-                alert("Hệ thống chưa sẵn sàng, sếp đợi 1 giây rồi bấm lại nhé!");
+            // Tự động hỏi sếp có muốn đưa vào lịch điện thoại không
+            if(confirm("Đã lưu! Sếp có muốn đưa việc này vào Lịch iPhone để nổ chuông chuẩn 100% không?")) {
+                addToDeviceCalendar(title, time);
             }
         }
+
+        function addToDeviceCalendar(title, time) {
+            const date = new Date(time);
+            const startDate = date.toISOString().replace(/-|:|\.\d+/g, "");
+            const endDate = new Date(date.getTime() + 30*60000).toISOString().replace(/-|:|\.\d+/g, ""); // Mặc định 30 phút
+            
+            // Tạo file lịch chuẩn (.ics)
+            const icsMsg = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startDate}\nDTEND:${endDate}\nSUMMARY:${title}\nDESCRIPTION:Nhắc nhở từ Đức Tú Event\nBEGIN:VALARM\nTRIGGER:-PT15M\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+            
+            const blob = new Blob([icsMsg], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'event.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function render() {
+            const list = document.getElementById('eventList');
+            events.sort((a,b) => new Date(a.time) - new Date(b.time));
+            list.innerHTML = events.map(e => `
+                <div class="task-item">
+                    <div>
+                        <b style="color:#B8860B;">${e.title}</b><br>
+                        <small style="color:#888;">${e.time.replace('T',' ')}</small>
+                    </div>
+                    <button class="btn-calendar" onclick="addToDeviceCalendar('${e.title}', '${e.time}')">ĐẨY SANG LỊCH</button>
+                </div>
+            `).join('');
+        }
+
+        window.onload = render;
     </script>
 </body>
 </html>
