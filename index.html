@@ -3,124 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone Calendar Clone</title>
-    <script src="https://cdn.jsdelivr.net/npm/vietnam-lunar-calendar@1.0.1/dist/lunar-calendar.min.js"></script>
+    <title>Quản Lý Show Diễn Pro</title>
     <style>
-        :root { --ios-blue: #007AFF; --ios-red: #FF3B30; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .calendar-container { width: 100%; max-width: 400px; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-        .day-name { font-weight: bold; color: #8e8e93; font-size: 0.8em; padding-bottom: 10px; }
-        .date-cell { padding: 10px 0; border-radius: 8px; cursor: pointer; position: relative; transition: 0.2s; }
-        .date-cell:hover { background: #f0f0f0; }
-        .date-cell.today { background: var(--ios-red); color: #fff; }
-        .lunar-date { font-size: 0.6em; display: block; color: #8e8e93; }
-        .today .lunar-date { color: #eee; }
+        :root {
+            --primary: #FF3B30;
+            --bg: #F2F2F7;
+            --card: #FFFFFF;
+            --text: #000000;
+            --accent: #007AFF;
+            --success: #34C759;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1C1C1E;
+            --card: #2C2C2E;
+            --text: #FFFFFF;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        /* Header & Clock */
+        .header { text-align: center; margin-bottom: 25px; }
+        #live-clock { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
         
-        /* Modal Style */
-        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                background: white; padding: 20px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.2); z-index: 10; width: 80%; max-width: 300px; }
-        .modal input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; }
-        .btn-group { display: flex; justify-content: flex-end; gap: 10px; }
-        button { border: none; background: var(--ios-blue); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); }
+        /* Avatar Section */
+        .profile-section { text-align: center; margin-bottom: 20px; }
+        .avatar-container {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 3px solid var(--accent); margin: 0 auto;
+            overflow: hidden; cursor: pointer; background: #ddd;
+        }
+        #avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Form Card */
+        .card {
+            background: var(--card); padding: 20px;
+            border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            width: 100%; padding: 12px; margin: 8px 0;
+            border-radius: 10px; border: 1px solid #ddd;
+            box-sizing: border-box; font-size: 1rem;
+        }
+
+        button {
+            background: var(--accent); color: white;
+            border: none; font-weight: bold; cursor: pointer;
+        }
+
+        .theme-toggle { position: fixed; top: 10px; right: 10px; width: auto; padding: 5px 15px; }
+
+        /* Show List */
+        .show-item {
+            background: var(--card); padding: 15px;
+            border-left: 5px solid var(--accent);
+            border-radius: 10px; margin-bottom: 10px;
+        }
+        .status-btn { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-done { background: var(--success); flex: 1; }
+        .btn-wait { background: #FF9500; flex: 1; }
+
+        .total-box {
+            background: var(--accent); color: white;
+            padding: 15px; border-radius: 12px; text-align: center;
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-<div class="calendar-container">
-    <header>
-        <h2 id="monthDisplay">Tháng 5 2026</h2>
-    </header>
-    <div class="days-grid" id="calendarGrid">
-        <!-- Tên các thứ -->
-        <div class="day-name">T2</div><div class="day-name">T3</div><div class="day-name">T4</div>
-        <div class="day-name">T5</div><div class="day-name">T6</div><div class="day-name">T7</div><div class="day-name">CN</div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Chế độ</button>
+
+    <div class="header">
+        <div class="profile-section">
+            <div class="avatar-container" onclick="document.getElementById('avatar-input').click()">
+                <img id="avatar-img" src="https://via.placeholder.com/80" alt="Avatar">
+            </div>
+            <input type="file" id="avatar-input" hidden accept="image/*" onchange="loadAvatar(event)">
+        </div>
+        <div id="live-date">Thứ ... , Ngày ...</div>
+        <div id="live-clock">00:00:00</div>
     </div>
-</div>
 
-<div class="overlay" id="overlay"></div>
-<div class="modal" id="eventModal">
-    <h4 id="modalTitle">Thêm lịch làm việc</h4>
-    <p>Hôm nay bạn có lịch của ai?</p>
-    <input type="text" id="clientName" placeholder="Tên khách hàng/Công việc...">
-    <div class="btn-group">
-        <button onclick="closeModal()" style="background:#8e8e93">Hủy</button>
-        <button onclick="saveAndExport()">Lưu & Đẩy sang Ghi chú</button>
+    <div class="card">
+        <h3>📅 Thêm Lịch Show</h3>
+        <input type="text" id="show-name" placeholder="Tên Show/Địa điểm">
+        <input type="date" id="show-date" onchange="updateLunarDisplay()">
+        <div id="lunar-info" style="font-size: 0.8em; color: var(--accent);"></div>
+        <input type="time" id="show-time">
+        <label style="font-size: 0.8em;">🎵 Nhạc chuông:</label>
+        <input type="file" id="ringtone-input" accept="audio/*">
+        <button onclick="addShow()">Lưu Lịch Diễn</button>
     </div>
-</div>
 
-<script>
-    let selectedDate = "";
+    <div class="total-box">
+        Tổng thu nhập tháng này: <span id="monthly-total">0</span> VNĐ
+    </div>
 
-    function renderCalendar() {
-        const grid = document.getElementById('calendarGrid');
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+    <h3>Danh sách Show</h3>
+    <div id="show-list"></div>
 
-        // Chỉnh sửa firstDay để phù hợp với Thứ 2 là ngày đầu tuần
-        let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+    <audio id="alarm-sound"></audio>
 
-        for (let i = 0; i < startOffset; i++) {
-            grid.innerHTML += `<div></div>`;
+    <script>
+        let shows = JSON.parse(localStorage.getItem('myShows')) || [];
+
+        // 1. Cập nhật ngày giờ
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('vi-VN');
+            checkAlarm(now);
+        }, 1000);
+
+        // 2. Chế độ sáng tối
+        function toggleTheme() {
+            const body = document.body;
+            const newTheme = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
         }
 
-        for (let day = 1; day <= daysInMonth; day++) {
-            // Logic tính âm lịch (Sử dụng thư viện hoặc thuật toán đơn giản)
-            // Ở đây minh họa bằng text giả lập, bạn có thể tích hợp thư viện moment-lunar hoặc tương tự
-            const lunarDay = Math.floor(Math.random() * 29) + 1; 
-            
-            const isToday = day === now.getDate() ? 'today' : '';
-            grid.innerHTML += `
-                <div class="date-cell ${isToday}" onclick="openModal(${day}, ${month+1}, ${year})">
-                    ${day}
-                    <span class="lunar-date">${lunarDay}/4</span>
-                </div>
-            `;
+        // 3. Xử lý ảnh đại diện
+        function loadAvatar(event) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                document.getElementById('avatar-img').src = reader.result;
+                localStorage.setItem('userAvatar', reader.result);
+            };
+            reader.readAsDataURL(event.target.files[0]);
         }
-    }
+        if(localStorage.getItem('userAvatar')) document.getElementById('avatar-img').src = localStorage.getItem('userAvatar');
 
-    function openModal(d, m, y) {
-        selectedDate = `${d}/${m}/${y}`;
-        document.getElementById('modalTitle').innerText = `Ngày ${selectedDate}`;
-        document.getElementById('eventModal').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    }
+        // 4. Thêm Show
+        function addShow() {
+            const name = document.getElementById('show-name').value;
+            const date = document.getElementById('show-date').value;
+            const time = document.getElementById('show-time').value;
+            const ringtone = document.getElementById('ringtone-input').files[0];
 
-    function closeModal() {
-        document.getElementById('eventModal').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('clientName').value = '';
-    }
+            if(!name || !date || !time) return alert("Vui lòng nhập đủ thông tin!");
 
-    function saveAndExport() {
-        const name = document.getElementById('clientName').value;
-        if (!name) return alert("Vui lòng nhập tên!");
+            const newShow = {
+                id: Date.now(),
+                name, date, time,
+                status: 'pending',
+                money: 0,
+                ringtone: ringtone ? URL.createObjectURL(ringtone) : null
+            };
 
-        const content = `Lịch làm việc ngày ${selectedDate}: ${name}`;
-        
-        // Tạo URL scheme để mở app Ghi chú trên iPhone
-        // Lưu ý: iOS không cho phép ghi đè trực tiếp vào một note cụ thể từ web, 
-        // nhưng ta có thể tạo bản nháp hoặc copy vào Clipboard.
-        
-        const encodedContent = encodeURIComponent(content);
-        
-        // Cách 1: Chuyển hướng sang app Ghi chú (tạo note mới qua Share Sheet hoặc Shortcuts)
-        // Cách tốt nhất là dùng link chuyển hướng hoặc copy
-        navigator.clipboard.writeText(content).then(() => {
-            alert("Đã sao chép nội dung. Đang mở Ghi chú...");
-            window.location.href = "mobilenotes://"; 
-        });
-        
-        closeModal();
-    }
+            shows.push(newShow);
+            saveAndRender();
+        }
 
-    renderCalendar();
-</script>
+        function saveAndRender() {
+            localStorage.setItem('myShows', JSON.stringify(shows));
+            renderShows();
+            updateTotal();
+        }
+
+        function renderShows() {
+            const list = document.getElementById('show-list');
+            list.innerHTML = '';
+            shows.forEach(show => {
+                const div = document.createElement('div');
+                div.className = 'show-item';
+                div.innerHTML = `
+                    <strong>${show.name}</strong> <br>
+                    📅 ${show.date} | ⏰ ${show.time}
+                    <div class="status-btn">
+                        ${show.status === 'pending' ? `
+                            <button class="btn-done" onclick="completeShow(${show.id})">Hoàn thành</button>
+                            <button class="btn-wait" onclick="alert('Đã đánh dấu chờ thanh toán')">Chờ tiền</button>
+                        ` : `<span>✅ Đã nhận: ${show.money} VNĐ</span>`}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function completeShow(id) {
+            const amount = prompt("Show này bạn nhận được bao nhiêu tiền?");
+            if (amount !== null) {
+                const show = shows.find(s => s.id === id);
+                show.status = 'done';
+                show.money = parseInt(amount) || 0;
+                saveAndRender();
+            }
+        }
+
+        function updateTotal() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const total = shows
+                .filter(s => new Date(s.date).getMonth() === currentMonth && s.status === 'done')
+                .reduce((sum, s) => sum + s.money, 0);
+            document.getElementById('monthly-total').innerText = total.toLocaleString();
+        }
+
+        // 5. Thông báo & Nhạc chuông
+        function checkAlarm(now) {
+            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const currentDate = now.toISOString().split('T')[0];
+
+            shows.forEach(show => {
+                if(show.date === currentDate && show.time === currentTime && !show.notified) {
+                    show.notified = true;
+                    if(show.ringtone) {
+                        const audio = document.getElementById('alarm-sound');
+                        audio.src = show.ringtone;
+                        audio.play();
+                    }
+                    alert(`⏰ BẮT ĐẦU SHOW: ${show.name}`);
+                }
+            });
+        }
+
+        // 6. Hiển thị lịch âm (Giả lập đơn giản - thực tế cần thư viện đầy đủ)
+        function updateLunarDisplay() {
+            const date = document.getElementById('show-date').value;
+            // Ở đây bạn có thể tích hợp thư viện amlich.js. 
+            // Tạm thời hiển thị nhắc nhở:
+            document.getElementById('lunar-info').innerText = "Đã chọn ngày dương: " + date + " (Âm lịch tương ứng)";
+        }
+
+        renderShows();
+        updateTotal();
+    </script>
 </body>
 </html>
