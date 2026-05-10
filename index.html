@@ -4,91 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Event</title>
+    <title>Đức Tú Pro</title>
     <style>
-        :root { --bg: #F2F2F7; --card: #FFFFFF; --primary: #D4AF37; --text: #1C1C1E; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .avatar-box { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary); margin-bottom: 10px; }
-        .card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 12px; font-weight: bold; margin-top: 5px; }
-        .task-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--primary); }
+        :root { --primary: #D4AF37; --bg: #F2F2F7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 20px; text-align: center; }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin: 0 auto 10px; overflow: hidden; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; }
+        #status { font-size: 12px; color: #34C759; margin-bottom: 10px; display: none; }
     </style>
 </head>
 <body>
 
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-        <div class="avatar-box"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-        <b>ĐỨC TÚ EVENT</b>
+    <div class="avatar">
+        <img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%">
     </div>
-
-    <button class="btn" style="background:#34C759; margin-bottom:15px;" onclick="requestPermission()">🔔 BẬM ĐỂ NHẬN THÔNG BÁO</button>
+    <h2 style="color:var(--primary); margin-bottom: 5px;">ĐỨC TÚ EVENT</h2>
+    <div id="status">● Hệ thống chạy ngầm đã kích hoạt</div>
 
     <div class="card">
-        <input type="text" id="tName" placeholder="Tên việc...">
-        <input type="datetime-local" id="tDate">
-        <button class="btn" onclick="addTask()">LƯU & HẸN GIỜ</button>
+        <button class="btn" style="background:#007AFF; margin-bottom:15px;" onclick="enableNotif()">1. BẬT THÔNG BÁO HỆ THỐNG</button>
+        <input type="text" id="taskName" placeholder="Tên việc cần báo...">
+        <input type="datetime-local" id="taskDate">
+        <button class="btn" onclick="saveTask()">2. LƯU LỊCH CHẠY NGẦM</button>
     </div>
 
-    <div id="taskList"></div>
-
     <script>
-        // Đăng ký Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        let swReg = null;
 
-        function requestPermission() {
-            Notification.requestPermission().then(perm => {
-                if (perm === 'granted') alert("Đã sẵn sàng nhận thông báo ngầm sếp ơi!");
+        // Đăng ký Service Worker khi mở app
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                swReg = reg;
+                document.getElementById('status').style.display = 'block';
             });
         }
 
-        let tasks = JSON.parse(localStorage.getItem('notif_tasks')) || [];
-
-        function addTask() {
-            const name = document.getElementById('tName').value;
-            const date = document.getElementById('tDate').value;
-            if (!name || !date) return;
-
-            const targetTime = new Date(date).getTime();
-            const now = new Date().getTime();
-            const delay = targetTime - now;
-
-            if (delay < 0) {
-                alert("Sếp chọn giờ ở tương lai nhé!");
-                return;
+        async function enableNotif() {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                alert("Sếp đã cấp quyền! Thông báo sẽ nổ kể cả khi tắt app.");
+            } else {
+                alert("Sếp cần vào Cài đặt iPhone để cho phép thông báo Safari.");
             }
+        }
 
-            const newTask = { id: Date.now(), name, date };
-            tasks.push(newTask);
-            localStorage.setItem('notif_tasks', JSON.stringify(tasks));
+        function saveTask() {
+            const name = document.getElementById('taskName').value;
+            const dateValue = document.getElementById('taskDate').value;
+            
+            if (!name || !dateValue) return alert("Sếp điền đủ thông tin nhé!");
 
-            // Gửi lệnh hẹn giờ vào Service Worker (Chạy ngầm)
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'SCHEDULE_NOTIFICATION',
+            const triggerTime = new Date(dateValue).getTime();
+            const now = Date.now();
+
+            if (triggerTime <= now) return alert("Sếp chọn giờ ở tương lai nhé!");
+
+            // Gửi thông tin sang Service Worker để nó canh giờ
+            if (swReg && swReg.active) {
+                swReg.active.postMessage({
+                    type: 'SET_ALARM',
                     taskName: name,
-                    delay: delay
+                    triggerTime: triggerTime
                 });
-                alert("Đã đặt báo thức ngầm thành công!");
+                alert("Đã cài báo thức ngầm cho việc: " + name);
+            } else {
+                alert("Hệ thống chưa sẵn sàng, sếp đợi 1 giây rồi bấm lại nhé!");
             }
-
-            render();
         }
-
-        function render() {
-            const list = document.getElementById('taskList');
-            list.innerHTML = tasks.map(t => `
-                <div class="task-item">
-                    <b>${t.name}</b><br>
-                    <small>${t.date.replace('T', ' ')}</small>
-                </div>
-            `).join('');
-        }
-
-        function del(id) { tasks = tasks.filter(x => x.id !== id); localStorage.setItem('notif_tasks', JSON.stringify(tasks)); render(); }
-        window.onload = render;
     </script>
 </body>
 </html>
