@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Đức Tú Event - Quản Lý Lịch V32</title>
+    <title>Đức Tú Event - Quản Lý Lịch V34</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
@@ -20,15 +20,15 @@
         .summary-item span { font-size: 8px; color: var(--sub); text-transform: uppercase; }
 
         .main-card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
+        .input-label { font-size: 11px; color: var(--sub); margin-bottom: 4px; display: block; text-align: left; margin-left: calc(50% - 130px); }
         input[type="text"], input[type="date"], select { 
             width: 100%; max-width: 260px; padding: 8px; margin: 0 auto 10px auto; display: block;
             border-radius: 10px; border: 1px solid rgba(142,142,147,0.2); background: var(--bg); color: var(--text); font-size: 13px; text-align: center; outline: none; 
         }
         
-        /* CHỌN NGÀY: DƯƠNG TRƯỚC (TO) - ÂM SAU (NHỎ) */
         .lunar-preview { display: none; background: rgba(0,0,0,0.05); border: 1px solid var(--sub); border-radius: 10px; padding: 8px; margin-bottom: 10px; font-size: 13px; color: var(--text); font-weight: bold; }
         .lunar-preview.show { display: block; }
-        .lunar-hint { font-size: 10px; color: var(--gold); font-weight: bold; display: block; margin-top: 2px; }
+        .lunar-hint { font-size: 11px; color: var(--gold); font-weight: bold; display: block; margin-top: 2px; }
 
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 10px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer; display: block; margin: 0 auto; }
 
@@ -37,8 +37,6 @@
         .show-item.waiting { border-left-color: #FF3B30; }
 
         .show-title { font-size: 14px; font-weight: bold; }
-        
-        /* DANH SÁCH: ÂM TRƯỚC (TO/VÀNG) - DƯƠNG SAU (NHỎ) */
         .lunar-main { font-size: 14px; font-weight: bold; color: var(--gold); }
         .solar-sub { font-size: 10px; color: var(--sub); margin-left: 5px; }
 
@@ -69,6 +67,7 @@
             <select id="lunarMonthFilter" style="width: 70px; margin: 0; padding: 2px; height: 25px; font-size: 11px;" onchange="render()">
                 <option value="01">Tháng 1</option><option value="02">Tháng 2</option><option value="03">Tháng 3</option>
                 <option value="04">Tháng 4</option><option value="05">Tháng 5</option><option value="06">Tháng 6</option>
+                <option value="06_nhuan">T6 Nhuận</option>
                 <option value="07">Tháng 7</option><option value="08">Tháng 8</option><option value="09">Tháng 9</option>
                 <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
             </select>
@@ -78,6 +77,7 @@
 
     <div class="main-card">
         <input type="text" id="sTitle" placeholder="Tên khách hàng / Show">
+        <span class="input-label">Chọn ngày chạy show:</span>
         <input type="date" id="sTime">
         <div class="lunar-preview" id="lunarPreview"></div>
         <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
@@ -86,29 +86,48 @@
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v32')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v34')) || [];
         let editingId = null;
-
-        const currentLunarMonth = String(Math.floor((new Date() - new Date(2026, 1, 17)) / 86400000 / 30) + 1).padStart(2, '0');
-        document.getElementById('lunarMonthFilter').value = (currentLunarMonth > 12) ? "12" : (currentLunarMonth <= 0 ? "01" : currentLunarMonth);
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
+        // Dữ liệu mốc lịch âm chuẩn 2026 (Năm nhuận tháng 6)
         function getLunarData(str) {
             const d = new Date(str);
-            const start = new Date(2026, 1, 17);
-            const diff = Math.floor((d - start) / 86400000) + 1;
-            let ld = (diff % 30); if(ld <= 0) ld += 30;
-            let lm = Math.floor(diff / 30) + 1;
-            return { day: String(ld).padStart(2, '0'), month: String(lm).padStart(2, '0') };
+            d.setHours(0,0,0,0);
+            const start = new Date(2026, 1, 17); // Mùng 1 Tết Bính Ngọ
+            const diffDays = Math.floor((d - start) / 86400000);
+            
+            // Số ngày của các tháng âm năm 2026: T1(30), T2(29), T3(30), T4(29), T5(30), T6(29), T6N(29), T7(30)...
+            const monthLengths = [30, 29, 30, 29, 30, 29, 29, 30, 29, 30, 30, 29, 30];
+            const monthNames = ["01", "02", "03", "04", "05", "06", "06_nhuan", "07", "08", "09", "10", "11", "12"];
+            
+            if (diffDays < 0) return { day: "??", month: "??" };
+
+            let daysLeft = diffDays;
+            for (let i = 0; i < monthLengths.length; i++) {
+                if (daysLeft < monthLengths[i]) {
+                    return { 
+                        day: String(daysLeft + 1).padStart(2, '0'), 
+                        month: monthNames[i] 
+                    };
+                }
+                daysLeft -= monthLengths[i];
+            }
+            return { day: "??", month: "??" };
         }
+
+        // Tự động chọn bộ lọc tháng âm hiện tại (Ngày 11/5 Dương là 25/3 Âm)
+        const initLunar = getLunarData(new Date());
+        document.getElementById('lunarMonthFilter').value = initLunar.month;
 
         document.getElementById('sTime').addEventListener('change', function() {
             const preview = document.getElementById('lunarPreview');
             if(!this.value) { preview.classList.remove('show'); return; }
             const d = new Date(this.value);
             const lunar = getLunarData(this.value);
-            preview.innerHTML = `📅 Dương: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} <span class="lunar-hint">🌙 Âm lịch: ${lunar.day}/${lunar.month}</span>`;
+            let monthDisp = lunar.month === '06_nhuan' ? '6 (Nhuận)' : lunar.month;
+            preview.innerHTML = `📅 Dương: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} <span class="lunar-hint">🌙 Âm lịch: Ngày ${lunar.day} tháng ${monthDisp}</span>`;
             preview.classList.add('show');
         });
 
@@ -123,7 +142,7 @@
             document.getElementById('lunarPreview').classList.remove('show');
         }
 
-        function updateData() { localStorage.setItem('duc_tu_v32', JSON.stringify(shows)); render(); }
+        function updateData() { localStorage.setItem('duc_tu_v34', JSON.stringify(shows)); render(); }
 
         function startEdit(id) { editingId = id; render(); }
         function cancelEdit() { editingId = null; render(); }
@@ -132,8 +151,8 @@
             const newTitle = document.getElementById(`edit-t-${id}`).value;
             const newTime = document.getElementById(`edit-d-${id}`).value;
             if(!newTitle || !newTime) return;
-            const idx = shows.findIndex(x => x.id === id);
             const lunar = getLunarData(newTime);
+            const idx = shows.findIndex(x => x.id === id);
             shows[idx].title = newTitle;
             shows[idx].time = newTime;
             shows[idx].lunarDay = lunar.day;
@@ -162,6 +181,7 @@
             area.innerHTML = shows.filter(s => s.lunarMonth === selectedLunarMonth).map(s => {
                 count++; total += Number(s.money);
                 const d = new Date(s.time);
+                let monthDisp = s.lunarMonth === '06_nhuan' ? '6N' : s.lunarMonth;
                 
                 if (editingId === s.id) {
                     return `
@@ -181,7 +201,7 @@
                         <div>
                             <div class="show-title">${s.title}</div>
                             <div style="margin-top:2px;">
-                                <span class="lunar-main">🌙 Âm: ${s.lunarDay}/${s.lunarMonth}</span>
+                                <span class="lunar-main">🌙 Âm: ${s.lunarDay}/${monthDisp}</span>
                                 <span class="solar-sub">📅 ${d.getDate()}/${d.getMonth()+1}</span>
                             </div>
                         </div>
