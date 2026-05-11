@@ -11,51 +11,67 @@
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
+        
+        /* Mặc định CHẾ ĐỘ SÁNG */
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
         
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
         .avatar-box { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; position: relative; flex-shrink: 0; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; position: relative; flex-shrink: 0; background: #eee; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         #avatarInput { display: none; }
         
         .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; min-width: 80px; font-family: -apple-system, sans-serif; }
 
-        /* Summary Card */
         .summary-card { background: var(--card); padding: 15px; border-radius: 20px; margin: 15px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; }
         .summary-item b { color: var(--gold); font-size: 16px; display: block; }
         .summary-item span { font-size: 9px; color: var(--sub); text-transform: uppercase; }
 
-        /* Filter Section */
         .filter-section { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
-        .month-select { background: var(--card); color: var(--gold); border: 1px solid var(--gold); padding: 5px 12px; border-radius: 10px; font-weight: bold; outline: none; }
+        .month-select { background: var(--card); color: var(--gold); border: 1px solid var(--gold); padding: 5px 12px; border-radius: 10px; font-weight: bold; outline: none; font-size: 13px; }
 
-        .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
-        input[type="text"], input[type="date"] { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 14px; border: 1.5px solid rgba(142,142,147,0.3); background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 14px; text-align: center; outline: none; }
+        .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; }
         
-        .lunar-preview { display: none; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 9px; margin-bottom: 12px; font-size: 13px; color: var(--gold); font-weight: bold; }
+        /* Ô nhập liệu nhỏ gọn */
+        input[type="text"], input[type="date"] { 
+            width: 100%; 
+            max-width: 280px; /* Thu nhỏ lại */
+            padding: 10px; 
+            margin: 0 auto 12px auto; 
+            display: block;
+            border-radius: 12px; 
+            border: 1.5px solid rgba(142,142,147,0.2); 
+            background: var(--bg); 
+            color: var(--text); 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            text-align: center; 
+            outline: none; 
+        }
+        
+        .lunar-preview { display: none; background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 8px; margin: 0 auto 12px auto; max-width: 280px; font-size: 12px; color: var(--gold); font-weight: bold; }
         .lunar-preview.show { display: block; }
 
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 16px; font-weight: bold; font-size: 15px; cursor: pointer; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 14px; width: 100%; max-width: 280px; border-radius: 15px; font-weight: bold; font-size: 14px; cursor: pointer; display: block; margin: 0 auto; }
 
-        /* Show Item */
-        .show-item { background: var(--card); padding: 15px; border-radius: 20px; margin-top: 12px; border-left: 5px solid #444; }
+        .show-item { background: var(--card); padding: 15px; border-radius: 20px; margin-top: 12px; border-left: 5px solid #444; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
 
-        .actions { margin-top: 12px; display: flex; gap: 8px; }
-        .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; }
+        .actions { margin-top: 12px; display: flex; gap: 6px; }
+        .btn-act { flex: 1; border: none; padding: 8px 4px; border-radius: 8px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; }
         .btn-done { background: #34C759; }
         .btn-wait { background: #FF3B30; }
         .btn-edit { background: #5856D6; width: 45px; flex: none; }
         .btn-del { background: #8E8E93; width: 40px; flex: none; }
 
-        .money-display { color: #34C759; font-weight: bold; font-size: 14px; margin-top: 5px; display: block; }
-        .wait-tag { color: #FF3B30; font-size: 11px; font-weight: bold; }
+        .money-display { color: #34C759; font-weight: bold; font-size: 13px; margin-top: 4px; display: inline-block; }
+        .wait-tag { color: #FF3B30; font-size: 10px; font-weight: bold; border: 1px solid #FF3B30; padding: 1px 5px; border-radius: 4px; }
     </style>
 </head>
-<body id="mainBody" class="dark">
+<body id="mainBody">
 
+    <canvas id="compressCanvas" style="display:none;"></canvas>
     <input type="file" id="avatarInput" accept="image/*">
 
     <div class="header">
@@ -65,17 +81,17 @@
             </div>
             <input class="editable-name" id="brandName" type="text" value="">
         </div>
-        <button onclick="toggleTheme()" style="background:none; border:none; font-size:22px;">🌓</button>
+        <button onclick="toggleTheme()" style="background:none; border:none; font-size:20px;">🌓</button>
     </div>
 
     <div class="filter-section">
-        <span style="font-size: 13px; font-weight: bold;">THÁNG:</span>
+        <span style="font-size: 12px; font-weight: bold; color: var(--sub);">THÁNG:</span>
         <input type="month" id="monthFilter" class="month-select" onchange="render()">
     </div>
 
     <div class="summary-card">
         <div class="summary-item"><b id="countMonth">0</b><span>Show Tháng</span></div>
-        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Tiền Thực Thu</span></div>
+        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Thực Thu</span></div>
     </div>
 
     <div class="main-card">
@@ -88,15 +104,12 @@
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v26')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v28')) || [];
         let editingId = null;
 
-        // Tự động chọn tháng hiện tại cho bộ lọc
         const now = new Date();
-        const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        document.getElementById('monthFilter').value = currentMonthStr;
+        document.getElementById('monthFilter').value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
-        // Thiết lập tên và avatar
         const nameEl = document.getElementById('brandName');
         nameEl.value = localStorage.getItem('brand_name') || 'ĐỨC TÚ EVENT';
         nameEl.addEventListener('input', () => localStorage.setItem('brand_name', nameEl.value));
@@ -104,28 +117,34 @@
         const avatarImg = document.getElementById('avatarImg');
         avatarImg.src = localStorage.getItem('brand_avatar') || 'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
 
-        document.getElementById('avatarInput').addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    avatarImg.src = e.target.result;
-                    localStorage.setItem('brand_avatar', e.target.result);
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('compressCanvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 150; canvas.height = 150;
+                    ctx.drawImage(img, 0, 0, 150, 150);
+                    const compressedData = canvas.toDataURL('image/jpeg', 0.8);
+                    avatarImg.src = compressedData;
+                    localStorage.setItem('brand_avatar', compressedData);
                 };
-                reader.readAsDataURL(file);
-            }
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         });
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
         document.getElementById('sTime').addEventListener('change', function() {
-            const val = this.value;
             const preview = document.getElementById('lunarPreview');
-            if (!val) { preview.classList.remove('show'); return; }
-            const lunar = getLunar(val);
-            const d = new Date(val);
+            if (!this.value) { preview.classList.remove('show'); return; }
+            const d = new Date(this.value);
             const days = ['CN','T2','T3','T4','T5','T6','T7'];
-            preview.textContent = '🌙 ' + days[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1) + ' → Âm: ' + lunar;
+            preview.textContent = '🌙 ' + days[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1) + ' → Âm: ' + getLunar(this.value);
             preview.classList.add('show');
         });
 
@@ -151,7 +170,6 @@
             } else {
                 shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunar: getLunar(time) });
             }
-            
             updateData();
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value = '';
@@ -179,14 +197,13 @@
         function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
 
         function updateData() {
-            localStorage.setItem('duc_tu_v26', JSON.stringify(shows));
+            localStorage.setItem('duc_tu_v28', JSON.stringify(shows));
             render();
         }
 
         function render() {
             const area = document.getElementById('showList');
-            const selectedMonth = document.getElementById('monthFilter').value; // Định dạng "YYYY-MM"
-            
+            const selectedMonth = document.getElementById('monthFilter').value;
             let totalMoney = 0, count = 0;
             shows.sort((a,b) => new Date(a.time) - new Date(b.time));
 
@@ -194,16 +211,15 @@
                 count++;
                 totalMoney += Number(s.money);
                 const d = new Date(s.time);
-                const dateStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
-                
                 return `
                 <div class="show-item ${s.status}">
-                    <div style="display:flex; justify-content:space-between;">
-                        <b style="font-size:17px;">${s.title}</b>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b style="font-size:16px;">${s.title}</b>
                         ${s.status === 'waiting' ? '<span class="wait-tag">🚩 CHỜ TIỀN</span>' : ''}
                     </div>
-                    <div style="font-size:12px; color:var(--sub); margin-top:8px;">
-                        📅 Dương: ${dateStr} | 🌙 Âm: <span style="color:var(--gold); font-weight:bold;">${s.lunar}</span>
+                    <div style="font-size:12px; color:var(--sub); margin-top:6px;">
+                        📅 ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} | 🌙 <span style="color:var(--gold); font-weight:bold;">${s.lunar}</span>
+                        <br>
                         ${s.status === 'paid' ? `<span class="money-display">💰 Nhận: ${Number(s.money).toLocaleString()}đ</span>` : ''}
                     </div>
                     <div class="actions">
@@ -214,7 +230,6 @@
                     </div>
                 </div>`;
             }).join('');
-
             document.getElementById('countMonth').innerText = count;
             document.getElementById('moneyMonth').innerText = totalMoney.toLocaleString() + 'đ';
         }
