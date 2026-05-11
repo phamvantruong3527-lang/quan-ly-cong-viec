@@ -11,13 +11,11 @@
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
-
-        /* Mặc định màu TRẮNG (không có class dark) */
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
-
+        
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
         .avatar-box { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; position: relative; flex-shrink: 0; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; position: relative; flex-shrink: 0; background: #eee; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         #avatarInput { display: none; }
         .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; min-width: 80px; font-family: -apple-system, sans-serif; }
@@ -31,85 +29,50 @@
 
         .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
 
-        /* Input tên và ngày cùng kích thước */
+        /* Style cho ô chọn ngày có ghi chú bên trong */
+        .input-group { position: relative; margin-bottom: 12px; }
         input[type="text"], input[type="date"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border-radius: 14px;
-            border: 1.5px solid rgba(142,142,147,0.3);
-            background: var(--bg);
-            color: var(--text);
-            box-sizing: border-box;
-            font-size: 14px;
-            text-align: center;
-            outline: none;
-            /* Ép date cùng kích thước với text */
-            appearance: none;
-            -webkit-appearance: none;
-            min-width: 0;
-            max-width: 100%;
+            width: 100%; padding: 12px; border-radius: 14px; border: 1.5px solid rgba(142,142,147,0.3); background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 14px; text-align: center; outline: none;
+        }
+        input[type="date"] { position: relative; }
+        input[type="date"]::before {
+            content: "NGÀY LÀM SHOW: ";
+            color: var(--gold); font-weight: bold; font-size: 11px; margin-right: 5px;
         }
 
         .lunar-preview { display: none; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 9px; margin-bottom: 12px; font-size: 13px; color: var(--gold); font-weight: bold; }
         .lunar-preview.show { display: block; }
-
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 16px; font-weight: bold; font-size: 15px; cursor: pointer; }
 
-        /* ===== SHOW ITEM NHỎ GỌN ===== */
-        .show-item {
-            background: var(--card);
-            padding: 10px 14px;       /* nhỏ hơn bản cũ */
-            border-radius: 14px;
-            margin-top: 10px;
-            border-left: 4px solid #444;
-            font-size: 13px;
-        }
+        .show-item { background: var(--card); padding: 10px 14px; border-radius: 14px; margin-top: 10px; border-left: 4px solid #444; font-size: 13px; }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
-
         .show-top { display: flex; justify-content: space-between; align-items: center; }
         .show-title { font-size: 15px; font-weight: bold; }
         .wait-tag { color: #FF3B30; font-size: 10px; font-weight: bold; }
-
         .show-info { color: var(--sub); margin-top: 4px; line-height: 1.6; }
         .money-display { color: #34C759; font-weight: bold; }
 
-        /* ACTIONS NHỎ GỌN */
         .actions { margin-top: 8px; display: flex; gap: 6px; }
         .btn-act { flex: 1; border: none; padding: 6px 4px; border-radius: 7px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; }
         .btn-done { background: #34C759; }
         .btn-wait { background: #FF3B30; }
-        .btn-del  { background: #8E8E93; flex: none; width: 36px; }
+        .btn-del { background: #8E8E93; flex: none; width: 36px; }
 
-        /* ===== MODAL SỬA TRỰC TIẾP ===== */
-        .edit-modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45); z-index: 100;
-            align-items: flex-end; justify-content: center;
-        }
+        /* Modal Sửa */
+        .edit-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-end; justify-content: center; }
         .edit-modal-overlay.show { display: flex; }
-        .edit-sheet {
-            background: var(--card); border-radius: 20px 20px 0 0;
-            width: 100%; max-width: 480px;
-            padding: 1.2rem 1.2rem 2.5rem;
-            animation: slideUp .3s cubic-bezier(.32,1,.23,1);
-        }
+        .edit-sheet { background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; padding: 20px 20px 40px; animation: slideUp .3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .sheet-handle { width: 36px; height: 4px; background: var(--sub); border-radius: 2px; margin: 0 auto 1rem; opacity: 0.4; }
-        .sheet-title { font-size: 16px; font-weight: 700; margin-bottom: 1rem; color: var(--gold); text-align: center; }
-        .edit-sheet input[type="text"],
-        .edit-sheet input[type="date"] { margin-bottom: 10px; }
-        .btn-row { display: flex; gap: 10px; margin-top: 8px; }
-        .btn-cancel-sheet { flex: 1; background: var(--bg); color: var(--text); border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .btn-update { flex: 1; background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .lunar-preview-sheet { display: none; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 10px; padding: 8px; margin-bottom: 10px; font-size: 12px; color: var(--gold); font-weight: bold; text-align: center; }
-        .lunar-preview-sheet.show { display: block; }
+        .sheet-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: var(--gold); text-align: center; }
+        .btn-row { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-cancel { flex: 1; background: var(--bg); color: var(--text); border: none; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .btn-update { flex: 1; background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
-<!-- Mặc định TRẮNG — không có class dark -->
 <body id="mainBody">
 
+    <canvas id="compressCanvas" style="display:none;"></canvas>
     <input type="file" id="avatarInput" accept="image/*">
 
     <div class="header">
@@ -129,11 +92,11 @@
 
     <div class="summary-card">
         <div class="summary-item"><b id="countMonth">0</b><span>Show Tháng</span></div>
-        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Tiền Thực Thu</span></div>
+        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Thực Thu</span></div>
     </div>
 
     <div class="main-card">
-        <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
+        <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn" style="margin-bottom:12px;">
         <input type="date" id="sTime">
         <div class="lunar-preview" id="lunarPreview">🌙 —</div>
         <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
@@ -141,53 +104,55 @@
 
     <div id="showList"></div>
 
-    <!-- ===== MODAL SỬA TRỰC TIẾP ===== -->
-    <div class="edit-modal-overlay" id="editOverlay" onclick="closeEdit(event)">
+    <div class="edit-modal-overlay" id="editOverlay" onclick="if(event.target==this) closeEditDirect()">
         <div class="edit-sheet">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title">✏️ Sửa Lịch Diễn</div>
-            <input type="text" id="editTitle" placeholder="Tên khách hàng / Show diễn">
-            <input type="date" id="editTime">
-            <div class="lunar-preview-sheet" id="lunarPreviewSheet">🌙 —</div>
+            <div class="sheet-title">✏️ Chỉnh Sửa Thông Tin</div>
+            <input type="text" id="editTitle" placeholder="Tên khách / Show">
+            <input type="date" id="editTime" style="margin-top:12px;">
             <div class="btn-row">
-                <button class="btn-cancel-sheet" onclick="closeEditDirect()">Huỷ</button>
-                <button class="btn-update" onclick="saveEdit()">Cập nhật</button>
+                <button class="btn-cancel" onclick="closeEditDirect()">Hủy</button>
+                <button class="btn-update" onclick="saveEdit()">Cập Nhật</button>
             </div>
         </div>
     </div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v26')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v27')) || [];
         let editingId = null;
 
-        // Tháng hiện tại
-        const now = new Date();
-        document.getElementById('monthFilter').value =
-            now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-
-        // Tên & avatar
-        const nameEl = document.getElementById('brandName');
-        nameEl.value = localStorage.getItem('brand_name') || 'ĐỨC TÚ EVENT';
-        nameEl.addEventListener('input', () => localStorage.setItem('brand_name', nameEl.value));
-
+        // Xử lý Ảnh đại diện (Nén ảnh để không bị lỗi bộ nhớ)
         const avatarImg = document.getElementById('avatarImg');
-        avatarImg.src = localStorage.getItem('brand_avatar') ||
-            'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
+        avatarImg.src = localStorage.getItem('brand_avatar') || 'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
 
-        document.getElementById('avatarInput').addEventListener('change', function() {
-            const file = this.files[0]; if(!file) return;
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = e => {
-                avatarImg.src = e.target.result;
-                try { localStorage.setItem('brand_avatar', e.target.result); } catch(e) {}
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('compressCanvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 150; canvas.height = 150; // Nén nhỏ lại
+                    ctx.drawImage(img, 0, 0, 150, 150);
+                    const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+                    avatarImg.src = compressedData;
+                    localStorage.setItem('brand_avatar', compressedData);
+                };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        // Theme — mặc định trắng, toggle dark
+        const nameEl = document.getElementById('brandName');
+        nameEl.value = localStorage.getItem('brand_name') || 'ĐỨC TÚ EVENT';
+        nameEl.addEventListener('input', () => localStorage.setItem('brand_name', nameEl.value));
+
+        const now = new Date();
+        document.getElementById('monthFilter').value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
-        // Lịch âm
         function getLunar(str) {
             const d = new Date(str);
             const start = new Date(2026, 1, 17);
@@ -196,80 +161,4 @@
             return `${ld<10?'0'+ld:ld}/${lm<10?'0'+lm:lm} (Âm)`;
         }
 
-        // Preview lịch âm — form chính
-        document.getElementById('sTime').addEventListener('change', function() {
-            showLunarPreview(this.value, 'lunarPreview');
-        });
-
-        // Preview lịch âm — modal sửa
-        document.getElementById('editTime').addEventListener('change', function() {
-            showLunarPreview(this.value, 'lunarPreviewSheet');
-        });
-
-        function showLunarPreview(val, previewId) {
-            const preview = document.getElementById(previewId);
-            if(!val) { preview.classList.remove('show'); return; }
-            const d = new Date(val);
-            const days = ['CN','T2','T3','T4','T5','T6','T7'];
-            preview.textContent = '🌙 ' + days[d.getDay()] + ' ' +
-                d.getDate() + '/' + (d.getMonth()+1) + ' → Âm: ' + getLunar(val);
-            preview.classList.add('show');
-        }
-
-        // Lưu mới
-        function saveShow() {
-            const title = document.getElementById('sTitle').value;
-            const time  = document.getElementById('sTime').value;
-            if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
-            shows.push({ id: Date.now(), title, time, status:'new', money:0, lunar:getLunar(time) });
-            updateData();
-            document.getElementById('sTitle').value = '';
-            document.getElementById('sTime').value  = '';
-            document.getElementById('lunarPreview').classList.remove('show');
-        }
-
-        // Mở modal sửa trực tiếp
-        function editShow(id) {
-            editingId = id;
-            const s = shows.find(x => x.id === id);
-            document.getElementById('editTitle').value = s.title;
-            document.getElementById('editTime').value  = s.time;
-            showLunarPreview(s.time, 'lunarPreviewSheet');
-            document.getElementById('editOverlay').classList.add('show');
-        }
-
-        // Đóng modal sửa
-        function closeEdit(e) {
-            if(e.target === document.getElementById('editOverlay')) closeEditDirect();
-        }
-        function closeEditDirect() {
-            document.getElementById('editOverlay').classList.remove('show');
-            editingId = null;
-        }
-
-        // Lưu sửa
-        function saveEdit() {
-            const title = document.getElementById('editTitle').value;
-            const time  = document.getElementById('editTime').value;
-            if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
-            const idx = shows.findIndex(x => x.id === editingId);
-            shows[idx].title = title;
-            shows[idx].time  = time;
-            shows[idx].lunar = getLunar(time);
-            closeEditDirect();
-            updateData();
-        }
-
-        function setStatus(id, type) {
-            const s = shows.find(x => x.id === id);
-            if(type === 'done') {
-                const m = prompt("Sếp nhận được bao nhiêu tiền?");
-                if(m !== null) { s.money = Number(m); s.status = 'paid'; }
-            } else { s.status = 'waiting'; }
-            updateData();
-        }
-
-        function del(id) {
-            if(confirm("Xóa lịch này nhé sếp?")) {
-                shows = shows.filter(x => x.id !== id);
-                updateData()
+        document.getElementById('sTime').addEventListener('change', function()
