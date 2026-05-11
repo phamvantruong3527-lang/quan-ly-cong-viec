@@ -25,8 +25,8 @@
         .summary-item b { color: var(--gold); font-size: 16px; display: block; }
         .summary-item span { font-size: 9px; color: var(--sub); text-transform: uppercase; }
         .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        input[type="text"], input[type="datetime-local"] { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 14px; border: 1.5px solid rgba(142,142,147,0.3); background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 14px; text-align: center; outline: none; }
-        input[type="datetime-local"] { max-width: 100%; min-width: 0; appearance: none; -webkit-appearance: none; }
+        input[type="text"], input[type="date"] { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 14px; border: 1.5px solid rgba(142,142,147,0.3); background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 14px; text-align: center; outline: none; }
+        input[type="date"] { appearance: none; -webkit-appearance: none; }
         .date-box { position: relative; width: 100%; }
         .date-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; color: var(--gold); pointer-events: none; opacity: 0.8; font-weight: bold; width: 100%; }
         #sTime:focus + .date-label, #sTime:valid + .date-label { display: none; }
@@ -69,7 +69,7 @@
     <div class="main-card">
         <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
         <div class="date-box">
-            <input type="datetime-local" id="sTime" required>
+            <input type="date" id="sTime" required>
             <div class="date-label">CHỌN NGÀY DIỄN</div>
         </div>
         <div class="lunar-preview" id="lunarPreview">🌙 —</div>
@@ -79,7 +79,7 @@
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v23')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v24')) || [];
 
         const nameEl = document.getElementById('brandName');
         nameEl.value = localStorage.getItem('brand_name') || 'ĐỨC TÚ EVENT';
@@ -96,7 +96,7 @@
             reader.onload = function(e) {
                 avatarImg.src = e.target.result;
                 try { localStorage.setItem('brand_avatar', e.target.result); }
-                catch(err) { alert('Ảnh quá lớn, không lưu được. Ảnh hiển thị tạm thời thôi sếp nhé!'); }
+                catch(err) { alert('Ảnh quá lớn sếp ơi!'); }
             };
             reader.readAsDataURL(file);
         });
@@ -110,7 +110,7 @@
             const lunar = getLunar(val);
             const d = new Date(val);
             const days = ['CN','T2','T3','T4','T5','T6','T7'];
-            preview.textContent = '🌙 ' + days[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1) + ' → Âm lịch: ' + lunar;
+            preview.textContent = '🌙 ' + days[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1) + ' → Âm: ' + lunar;
             preview.classList.add('show');
         });
 
@@ -144,7 +144,7 @@
         function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
 
         function updateData() {
-            localStorage.setItem('duc_tu_v23', JSON.stringify(shows));
+            localStorage.setItem('duc_tu_v24', JSON.stringify(shows));
             render();
         }
 
@@ -157,6 +157,9 @@
             area.innerHTML = shows.map(s => {
                 const sDate = new Date(s.time);
                 if(sDate >= thirtyDaysAgo) { count++; totalMoney += Number(s.money); }
+                // Định dạng ngày hiển thị dd/mm/yyyy
+                const d = new Date(s.time);
+                const dateStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
                 return `
                 <div class="show-item ${s.status}">
                     <div style="display:flex; justify-content:space-between;">
@@ -164,7 +167,7 @@
                         ${s.status === 'waiting' ? '<span class="wait-tag">🚩 CHỜ TIỀN</span>' : ''}
                     </div>
                     <div style="font-size:12px; color:var(--sub); margin-top:8px; line-height:1.5;">
-                        📅 Dương: ${s.time.replace('T',' ')} <br>
+                        📅 Dương: ${dateStr} <br>
                         🌙 Lịch Âm: <span class="lunar-text">${s.lunar}</span>
                         ${s.status === 'paid' ? `<span class="money-display">💰 Đã nhận: ${Number(s.money).toLocaleString()}đ</span>` : ''}
                     </div>
