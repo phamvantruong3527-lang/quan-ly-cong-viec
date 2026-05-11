@@ -4,132 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Event - Quản Lý Lịch Diễn</title>
+    <title>Đức Tú Event - Quản Lý Show</title>
     <style>
-        :root { --gold: #D4AF37; --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; }
+        :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
+        body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
         
-        .header { display: flex; align-items: center; gap: 12px; padding: 20px 0; border-bottom: 1px solid #333; }
-        .avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--sub); }
+        .avatar-box { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
         
-        .main-card { background: var(--card); padding: 20px; border-radius: 25px; margin-top: 20px; border: 1px solid #333; }
-        h3 { color: var(--gold); margin: 0 0 15px 0; text-transform: uppercase; font-size: 18px; }
+        .main-card { background: var(--card); padding: 20px; border-radius: 25px; margin-top: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid var(--sub); background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 15px; }
         
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; margin-left: 5px; }
-        input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #333; background: #2C2C2E; color: white; box-sizing: border-box; font-size: 15px; }
+        .lunar-preview { background: rgba(212, 175, 55, 0.1); padding: 10px; border-radius: 10px; color: var(--gold); font-weight: bold; font-size: 13px; text-align: center; display: none; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 16px; margin-top: 10px; }
         
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 800; font-size: 16px; margin-top: 5px; }
-        
-        .task-list { margin-top: 25px; }
-        .task-item { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 15px; border-left: 5px solid var(--gold); position: relative; }
-        .info b { color: var(--gold); font-size: 17px; display: block; margin-bottom: 5px; }
-        .info span { font-size: 13px; color: #ccc; display: block; margin-bottom: 3px; }
-        .money-tag { color: #34C759; font-weight: bold; font-size: 14px; }
-        
-        .actions { display: flex; gap: 10px; margin-top: 12px; border-top: 1px solid #333; padding-top: 10px; }
-        .btn-edit { background: #007AFF; color: white; border: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
-        .btn-del { background: #FF3B30; color: white; border: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        .show-item { background: var(--card); padding: 18px; border-radius: 20px; margin-top: 15px; border-left: 5px solid var(--gold); position: relative; }
+        .status-flag { color: #FF3B30; font-weight: bold; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+        .money-tag { color: #34C759; font-weight: bold; font-size: 15px; }
+        .actions { margin-top: 12px; display: flex; gap: 10px; border-top: 1px solid var(--sub); padding-top: 10px; }
+        .btn-act { border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; }
     </style>
 </head>
-<body>
+<body id="mainBody" class="dark">
 
     <div class="header">
-        <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-        <div>
-            <b style="font-size: 18px; color: var(--gold);">ĐỨC TÚ EVENT</b><br>
-            <small style="color: #888;">Quản lý sự kiện & Tài chính</small>
+        <div class="avatar-box">
+            <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
+            <b style="color: var(--gold);">ĐỨC TÚ EVENT</b>
         </div>
+        <button onclick="toggleTheme()" style="background:none; border:none; font-size:20px;">🌓</button>
     </div>
 
     <div class="main-card">
-        <h3>Lên lịch mới</h3>
-        <div class="input-group">
-            <input type="text" id="tTitle" placeholder="Tên khách hàng / Sự kiện...">
+        <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn...">
+        <input type="datetime-local" id="sTime" onchange="previewLunar()">
+        <div id="lunarShow" class="lunar-preview"></div>
+        
+        <select id="sStatus" onchange="toggleMoneyInput()">
+            <option value="waiting">🚩 Chờ thanh toán</option>
+            <option value="done">✅ Đã hoàn thành</option>
+        </select>
+        
+        <div id="moneyBox" style="display:none;">
+            <input type="number" id="sMoney" placeholder="Nhập số tiền đã nhận...">
         </div>
-        <div class="input-group">
-            <input type="datetime-local" id="tTime">
-            <label>Chọn ngày diễn (Dương lịch)</label>
-        </div>
-        <div class="input-group">
-            <input type="text" id="tMoney" placeholder="Số tiền đã nhận (VD: 2.000.000)">
-        </div>
-        <button class="btn-save" onclick="saveTask()">LƯU LỊCH DIỄN</button>
+        
+        <button class="btn-save" onclick="saveShow()">LƯU SHOW DIỄN</button>
     </div>
 
-    <div class="task-list" id="list"></div>
+    <div id="showList"></div>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('duc_tu_v17')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v18')) || [];
 
-        // Thuật toán tính lịch âm tương đối cho 2026
+        function toggleTheme() {
+            document.getElementById('mainBody').classList.toggle('dark');
+        }
+
         function getLunar(str) {
             const d = new Date(str);
-            const start = new Date(2026, 1, 17); // Mùng 1 Tết 2026
-            const diff = Math.floor((d - start) / 86400000);
-            if (diff < 0) return "Đầu năm 2026";
+            const diff = Math.floor((d - new Date(2026, 1, 17)) / 86400000);
             let ld = (diff % 30) + 1, lm = Math.floor(diff / 30) + 1;
             return `${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} (Âm)`;
         }
 
-        function formatMoney(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VNĐ";
-        }
-
-        function saveTask() {
-            const title = document.getElementById('tTitle').value;
-            const time = document.getElementById('tTime').value;
-            const money = document.getElementById('tMoney').value;
-
-            if(!title || !time) return alert("Sếp nhập tên và ngày nhé!");
-
-            const newTask = { id: Date.now(), title, time, money, lunar: getLunar(time) };
-            tasks.push(newTask);
-            sync();
-            clearForm();
-        }
-
-        function clearForm() {
-            document.getElementById('tTitle').value = '';
-            document.getElementById('tTime').value = '';
-            document.getElementById('tMoney').value = '';
-        }
-
-        function sync() {
-            localStorage.setItem('duc_tu_v17', JSON.stringify(tasks));
-            render();
-        }
-
-        function editTask(id) {
-            const t = tasks.find(x => x.id === id);
-            const newTitle = prompt("Sửa tên khách:", t.title);
-            const newMoney = prompt("Sửa số tiền đã nhận:", t.money);
-            if (newTitle !== null) t.title = newTitle;
-            if (newMoney !== null) t.money = newMoney;
-            sync();
-        }
-
-        function delTask(id) {
-            if(confirm("Xóa lịch diễn này của sếp?")) {
-                tasks = tasks.filter(x => x.id !== id);
-                sync();
+        function previewLunar() {
+            const time = document.getElementById('sTime').value;
+            if(time) {
+                document.getElementById('lunarShow').style.display = 'block';
+                document.getElementById('lunarShow').innerText = "🌙 Ngày Âm dự kiến: " + getLunar(time);
             }
         }
 
+        function toggleMoneyInput() {
+            const status = document.getElementById('sStatus').value;
+            document.getElementById('moneyBox').style.display = (status === 'done') ? 'block' : 'none';
+        }
+
+        function saveShow() {
+            const title = document.getElementById('sTitle').value;
+            const time = document.getElementById('sTime').value;
+            const status = document.getElementById('sStatus').value;
+            const money = document.getElementById('sMoney').value;
+
+            if(!title || !time) return alert("Sếp điền đủ tên và ngày nhé!");
+
+            shows.push({ id: Date.now(), title, time, status, money, lunar: getLunar(time) });
+            localStorage.setItem('duc_tu_v18', JSON.stringify(shows));
+            render();
+            location.reload(); // Reset form
+        }
+
+        function del(id) { if(confirm("Xóa show này nhé sếp?")) { shows = shows.filter(x => x.id !== id); localStorage.setItem('duc_tu_v18', JSON.stringify(shows)); render(); } }
+
         function render() {
-            const area = document.getElementById('list');
-            tasks.sort((a,b) => new Date(a.time) - new Date(b.time));
-            area.innerHTML = tasks.map(t => `
-                <div class="task-item">
-                    <div class="info">
-                        <b>${t.title}</b>
-                        <span>📅 Dương: ${t.time.replace('T', ' ')}</span>
-                        <span>🌙 Âm lịch: ${t.lunar}</span>
-                        <span class="money-tag">💰 Đã nhận: ${t.money ? formatMoney(t.money) : '0 VNĐ'}</span>
+            const area = document.getElementById('showList');
+            shows.sort((a,b) => new Date(a.time) - new Date(b.time));
+            area.innerHTML = shows.map(s => `
+                <div class="show-item">
+                    <div style="display:flex; justify-content:space-between;">
+                        <b>${s.title}</b>
+                        ${s.status === 'waiting' ? '<span class="status-flag">🚩 Chờ thanh toán</span>' : '<span class="money-tag">💰 +'+Number(s.money).toLocaleString()+'đ</span>'}
+                    </div>
+                    <div style="font-size:13px; margin-top:8px; color:var(--sub);">
+                        📅 Dương: ${s.time.replace('T', ' ')} <br>
+                        🌙 Âm lịch: ${s.lunar}
                     </div>
                     <div class="actions">
-                        <button class="btn-edit" onclick="editTask(${t.id})">SỬA</button>
-                        <button class="btn-del" onclick="delTask(${t.id})">XÓA</button>
+                        <button class="btn-act" style="background:#FF3B30" onclick="del(${s.id})">XÓA</button>
                     </div>
                 </div>
             `).join('');
