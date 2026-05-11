@@ -4,46 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Event - Quản Lý Show</title>
+    <title>Đức Tú Event - Quản Lý Lịch</title>
     <style>
-        :root { --gold: #D4AF37; --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; }
+        :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
+        body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
         
-        .header { display: flex; align-items: center; gap: 10px; padding: 15px 0; border-bottom: 1px solid #333; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
+        .avatar-box { display: flex; align-items: center; gap: 10px; }
         .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
         
-        .summary-card { background: linear-gradient(135deg, #2C2C2E, #1C1C1E); padding: 15px; border-radius: 20px; margin: 15px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; }
-        .summary-item b { color: var(--gold); font-size: 18px; display: block; }
-        .summary-item span { font-size: 10px; color: var(--sub); text-transform: uppercase; }
+        .summary-card { background: var(--card); padding: 15px; border-radius: 20px; margin: 15px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; }
+        .summary-item b { color: var(--gold); font-size: 16px; display: block; }
+        .summary-item span { font-size: 9px; color: var(--sub); text-transform: uppercase; }
 
-        .main-card { background: var(--card); padding: 20px; border-radius: 25px; border: 1px solid #333; }
+        .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        
+        /* Thu nhỏ khung chọn ngày bằng với khung nhập tên */
         input { 
             width: 100%; 
             padding: 12px; 
-            margin-bottom: 10px; 
-            border-radius: 12px; 
-            border: 1px solid #444; 
-            background: #2C2C2E; 
-            color: white; 
+            margin-bottom: 12px; 
+            border-radius: 14px; 
+            border: 1.5px solid rgba(142,142,147,0.3); 
+            background: var(--bg); 
+            color: var(--text); 
             box-sizing: border-box; 
             font-size: 14px;
             text-align: center;
+            outline: none;
         }
 
-        .date-box { position: relative; }
+        .date-box { position: relative; width: 100%; }
         .date-label { 
             position: absolute; 
             top: 50%; left: 50%; 
             transform: translate(-50%, -50%); 
             font-size: 12px; color: var(--gold); 
-            pointer-events: none; opacity: 0.7;
+            pointer-events: none; opacity: 0.8;
             font-weight: bold;
+            width: 100%;
         }
         #sTime:focus + .date-label, #sTime:valid + .date-label { display: none; }
 
-        .btn-save { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 15px; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 16px; font-weight: bold; font-size: 15px; margin-top: 5px; }
         
-        .show-item { background: var(--card); padding: 15px; border-radius: 20px; margin-top: 12px; border-left: 5px solid #444; position: relative; }
+        .show-item { background: var(--card); padding: 15px; border-radius: 20px; margin-top: 12px; border-left: 5px solid #444; }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
 
@@ -51,22 +57,26 @@
         .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; }
         .btn-done { background: #34C759; }
         .btn-wait { background: #FF3B30; }
-        .btn-del { background: #444; width: 40px; flex: none; }
+        .btn-del { background: #8E8E93; width: 40px; flex: none; }
 
         .money-display { color: #34C759; font-weight: bold; font-size: 14px; margin-top: 5px; display: block; }
         .wait-tag { color: #FF3B30; font-size: 12px; font-weight: bold; }
+        .lunar-text { color: var(--gold); font-weight: bold; }
     </style>
 </head>
-<body>
+<body id="mainBody" class="dark">
 
     <div class="header">
-        <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-        <b style="color: var(--gold);">ĐỨC TÚ EVENT PRO</b>
+        <div class="avatar-box">
+            <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
+            <b style="color: var(--gold); font-size: 16px;">ĐỨC TÚ EVENT</b>
+        </div>
+        <button onclick="toggleTheme()" style="background:none; border:none; font-size:22px; cursor:pointer;">🌓</button>
     </div>
 
     <div class="summary-card">
         <div class="summary-item"><b id="count30">0</b><span>Show (30 ngày)</span></div>
-        <div class="summary-item"><b id="money30">0đ</b><span>Tổng tiền nhận</span></div>
+        <div class="summary-item"><b id="money30">0đ</b><span>Đã thu tiền</span></div>
     </div>
 
     <div class="main-card">
@@ -81,8 +91,11 @@
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v22')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v23')) || [];
 
+        function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
+
+        // Thuật toán Lịch Âm chính xác cho 2026
         function getLunar(str) {
             const d = new Date(str);
             const start = new Date(2026, 1, 17); 
@@ -93,7 +106,7 @@
 
         function saveShow() {
             const title = document.getElementById('sTitle').value, time = document.getElementById('sTime').value;
-            if(!title || !time) return;
+            if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
             shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunar: getLunar(time) });
             updateData();
             document.getElementById('sTitle').value = '';
@@ -103,18 +116,16 @@
         function setStatus(id, type) {
             const s = shows.find(x => x.id === id);
             if(type === 'done') {
-                const m = prompt("Sếp nhận được bao nhiêu tiền cho show này?");
+                const m = prompt("Sếp nhận được bao nhiêu tiền?");
                 if(m !== null) { s.money = Number(m); s.status = 'paid'; }
-            } else {
-                s.status = 'waiting';
-            }
+            } else { s.status = 'waiting'; }
             updateData();
         }
 
-        function del(id) { if(confirm("Xóa show này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
+        function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
 
         function updateData() {
-            localStorage.setItem('duc_tu_v22', JSON.stringify(shows));
+            localStorage.setItem('duc_tu_v23', JSON.stringify(shows));
             render();
         }
 
@@ -122,8 +133,8 @@
             const area = document.getElementById('showList');
             const now = new Date();
             const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-            
             let totalMoney = 0, count = 0;
+
             shows.sort((a,b) => new Date(a.time) - new Date(b.time));
 
             area.innerHTML = shows.map(s => {
@@ -135,16 +146,17 @@
 
                 return `
                 <div class="show-item ${s.status}">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <b>${s.title}</b>
+                    <div style="display:flex; justify-content:space-between;">
+                        <b style="font-size:17px;">${s.title}</b>
                         ${s.status === 'waiting' ? '<span class="wait-tag">🚩 CHỜ TIỀN</span>' : ''}
                     </div>
-                    <div style="font-size:12px; color:var(--sub); margin-top:5px;">
-                        📅 ${s.time.replace('T',' ')} | 🌙 ${s.lunar}
-                        ${s.status === 'paid' ? `<span class="money-display">💰 +${Number(s.money).toLocaleString()}đ</span>` : ''}
+                    <div style="font-size:12px; color:var(--sub); margin-top:8px; line-height:1.5;">
+                        📅 Dương: ${s.time.replace('T',' ')} <br>
+                        🌙 Lịch Âm: <span class="lunar-text">${s.lunar}</span>
+                        ${s.status === 'paid' ? `<span class="money-display">💰 Đã nhận: ${Number(s.money).toLocaleString()}đ</span>` : ''}
                     </div>
                     <div class="actions">
-                        ${s.status === 'new' || s.status === 'waiting' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">HOÀN THÀNH</button>` : ''}
+                        ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">HOÀN THÀNH</button>` : ''}
                         ${s.status === 'new' ? `<button class="btn-act btn-wait" onclick="setStatus(${s.id}, 'wait')">CHỜ TIỀN</button>` : ''}
                         <button class="btn-act btn-del" onclick="del(${s.id})">XÓA</button>
                     </div>
