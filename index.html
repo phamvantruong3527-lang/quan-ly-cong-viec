@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Đức Tú Event">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg">
+    <link rel="apple-touch-icon-precomposed" href="https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg">
     <title>Đức Tú Event - Quản Lý Lịch</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
-        
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
         .avatar-box { display: flex; align-items: center; gap: 10px; }
@@ -85,7 +87,7 @@
 
         const avatarImg = document.getElementById('avatarImg');
         const savedAvatar = localStorage.getItem('brand_avatar');
-        avatarImg.src = savedAvatar || 'https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg';
+        avatarImg.src = savedAvatar || 'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
 
         document.getElementById('avatarInput').addEventListener('change', function() {
             const file = this.files[0];
@@ -101,7 +103,6 @@
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
-        // Hiển thị lịch âm ngay khi chọn xong ngày
         document.getElementById('sTime').addEventListener('change', function() {
             const val = this.value;
             const preview = document.getElementById('lunarPreview');
