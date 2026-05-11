@@ -3,45 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Đức Tú Event">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg">
-    <link rel="apple-touch-icon-precomposed" href="https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg">
-    <title>Đức Tú Event - Quản Lý Lịch</title>
+    <title>Đức Tú Event - Quản Lý Lịch Âm</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
-        
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
         
         .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(142,142,147,0.1); }
         .avatar-box { display: flex; align-items: center; gap: 8px; }
-        .avatar { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--gold); overflow: hidden; cursor: pointer; flex-shrink: 0; }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        #avatarInput { display: none; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--gold); overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .editable-name { color: var(--gold); font-size: 14px; font-weight: bold; border: none; background: transparent; outline: none; width: 120px; }
 
-        .summary-card { background: var(--card); padding: 10px; border-radius: 15px; margin: 10px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; }
+        .summary-card { background: var(--card); padding: 10px; border-radius: 15px; margin: 10px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; align-items: center; }
         .summary-item b { color: var(--gold); font-size: 14px; display: block; }
         .summary-item span { font-size: 8px; color: var(--sub); text-transform: uppercase; }
 
         .main-card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
-        input[type="text"], input[type="date"] { 
+        input[type="text"], input[type="date"], select { 
             width: 100%; max-width: 260px; padding: 8px; margin: 0 auto 10px auto; display: block;
             border-radius: 10px; border: 1px solid rgba(142,142,147,0.2); background: var(--bg); color: var(--text); font-size: 13px; text-align: center; outline: none; 
         }
         
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 10px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer; display: block; margin: 0 auto; }
 
-        /* DANH SÁCH SHOW NHỎ GỌN */
         .show-item { background: var(--card); padding: 8px 12px; border-radius: 12px; margin-top: 8px; border-left: 3px solid #444; position: relative; }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
 
         .show-title { font-size: 14px; font-weight: bold; }
-        .show-date { font-size: 11px; color: var(--sub); margin-top: 2px; }
-        .lunar-tag { color: var(--gold); font-weight: bold; }
-        .money-tag { color: #34C759; font-weight: bold; font-size: 12px; }
+        .lunar-main { font-size: 15px; color: var(--gold); font-weight: bold; margin-top: 2px; }
+        .solar-sub { font-size: 10px; color: var(--sub); }
 
         .actions { margin-top: 6px; display: flex; gap: 4px; }
         .btn-act { flex: 1; border: none; padding: 5px; border-radius: 6px; font-size: 9px; font-weight: bold; color: white; cursor: pointer; }
@@ -50,35 +42,31 @@
         .btn-edit { background: #5856D6; flex: none; width: 35px; }
         .btn-del { background: #8E8E93; flex: none; width: 30px; }
 
-        /* FORM SỬA TẠI CHỖ */
         .inline-edit-box { background: rgba(212,175,55,0.1); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
-        .inline-edit-box input { margin-bottom: 5px !important; background: var(--card) !important; }
-        .btn-group-edit { display: flex; gap: 5px; }
-        .btn-save-edit { background: var(--gold); color: white; border: none; padding: 6px; border-radius: 6px; flex: 1; font-size: 10px; font-weight: bold; }
-        .btn-cancel-edit { background: #8E8E93; color: white; border: none; padding: 6px; border-radius: 6px; flex: 1; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body id="mainBody">
 
-    <canvas id="compressCanvas" style="display:none;"></canvas>
-    <input type="file" id="avatarInput" accept="image/*">
-
     <div class="header">
         <div class="avatar-box">
-            <div class="avatar" onclick="document.getElementById('avatarInput').click()">
-                <img id="avatarImg" src="" alt="avatar">
-            </div>
-            <input class="editable-name" id="brandName" type="text" value="">
+            <div class="avatar"><img id="avatarImg" src="https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg"></div>
+            <input class="editable-name" id="brandName" type="text" value="ĐỨC TÚ EVENT">
         </div>
         <button onclick="toggleTheme()" style="background:none; border:none; font-size:18px;">🌓</button>
     </div>
 
     <div class="summary-card">
-        <div class="summary-item"><b id="countMonth">0</b><span>Show</span></div>
+        <div class="summary-item"><b id="countMonth">0</b><span>Show Âm</span></div>
         <div class="summary-item">
-            <input type="month" id="monthFilter" style="border:none; background:none; color:var(--gold); font-weight:bold; font-size:13px; text-align:center; padding:0; width:100px;" onchange="render()">
+            <span style="font-size: 7px; display: block;">LỌC THÁNG ÂM</span>
+            <select id="lunarMonthFilter" style="width: 80px; margin: 0; padding: 2px; height: 25px; font-size: 11px;" onchange="render()">
+                <option value="01">Tháng 1</option><option value="02">Tháng 2</option><option value="03">Tháng 3</option>
+                <option value="04">Tháng 4</option><option value="05">Tháng 5</option><option value="06">Tháng 6</option>
+                <option value="07">Tháng 7</option><option value="08">Tháng 8</option><option value="09">Tháng 9</option>
+                <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+            </select>
         </div>
-        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Thu</span></div>
+        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Tiền Thu</span></div>
     </div>
 
     <div class="main-card">
@@ -90,37 +78,39 @@
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v29')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v30')) || [];
         let editingId = null;
 
-        document.getElementById('monthFilter').value = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
-        
-        const avatarImg = document.getElementById('avatarImg');
-        avatarImg.src = localStorage.getItem('brand_avatar') || 'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
-        
-        const nameEl = document.getElementById('brandName');
-        nameEl.value = localStorage.getItem('brand_name') || 'ĐỨC TÚ EVENT';
-        nameEl.addEventListener('input', () => localStorage.setItem('brand_name', nameEl.value));
+        // Tự động chọn tháng âm hiện tại (tính tương đối)
+        const currentLunarMonth = String(Math.floor((new Date() - new Date(2026, 1, 17)) / 86400000 / 30) + 1).padStart(2, '0');
+        document.getElementById('lunarMonthFilter').value = (currentLunarMonth > 12) ? "12" : currentLunarMonth;
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
-        function getLunar(str) {
+        // Hàm tính lịch âm (Logic 2026: mùng 1 Tết là 17/02/2026 Dương)
+        function getLunarData(str) {
             const d = new Date(str);
-            const start = new Date(2026, 1, 17);
+            const start = new Date(2026, 1, 17); // 17-02-2026
             const diff = Math.floor((d - start) / 86400000) + 1;
-            let ld = (diff % 30) + 1, lm = Math.floor(diff / 30) + 1;
-            return `${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} (Âm)`;
+            let ld = (diff % 30); if(ld <= 0) ld += 30;
+            let lm = Math.floor(diff / 30) + 1;
+            return { 
+                day: String(ld).padStart(2, '0'), 
+                month: String(lm).padStart(2, '0'),
+                full: `${String(ld).padStart(2, '0')}/${String(lm).padStart(2, '0')}`
+            };
         }
 
         function saveShow() {
             const title = document.getElementById('sTitle').value, time = document.getElementById('sTime').value;
             if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
-            shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunar: getLunar(time) });
+            const lunar = getLunarData(time);
+            shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunarDay: lunar.day, lunarMonth: lunar.month });
             updateData();
             document.getElementById('sTitle').value = ''; document.getElementById('sTime').value = '';
         }
 
-        function updateData() { localStorage.setItem('duc_tu_v29', JSON.stringify(shows)); render(); }
+        function updateData() { localStorage.setItem('duc_tu_v30', JSON.stringify(shows)); render(); }
 
         function startEdit(id) { editingId = id; render(); }
         function cancelEdit() { editingId = null; render(); }
@@ -130,9 +120,11 @@
             const newTime = document.getElementById(`edit-d-${id}`).value;
             if(!newTitle || !newTime) return;
             const idx = shows.findIndex(x => x.id === id);
+            const lunar = getLunarData(newTime);
             shows[idx].title = newTitle;
             shows[idx].time = newTime;
-            shows[idx].lunar = getLunar(newTime);
+            shows[idx].lunarDay = lunar.day;
+            shows[idx].lunarMonth = lunar.month;
             editingId = null;
             updateData();
         }
@@ -140,7 +132,7 @@
         function setStatus(id, type) {
             const s = shows.find(x => x.id === id);
             if(type === 'done') {
-                const m = prompt("Sếp nhận được bao nhiêu tiền?");
+                const m = prompt("Số tiền nhận được?");
                 if(m !== null) { s.money = Number(m); s.status = 'paid'; }
             } else { s.status = 'waiting'; }
             updateData();
@@ -150,11 +142,11 @@
 
         function render() {
             const area = document.getElementById('showList');
-            const filter = document.getElementById('monthFilter').value;
+            const selectedLunarMonth = document.getElementById('lunarMonthFilter').value;
             let total = 0, count = 0;
             shows.sort((a,b) => new Date(a.time) - new Date(b.time));
 
-            area.innerHTML = shows.filter(s => s.time.startsWith(filter)).map(s => {
+            area.innerHTML = shows.filter(s => s.lunarMonth === selectedLunarMonth).map(s => {
                 count++; total += Number(s.money);
                 const d = new Date(s.time);
                 
@@ -163,22 +155,22 @@
                     <div class="inline-edit-box">
                         <input type="text" id="edit-t-${s.id}" value="${s.title}">
                         <input type="date" id="edit-d-${s.id}" value="${s.time}">
-                        <div class="btn-group-edit">
-                            <button class="btn-save-edit" onclick="saveInlineEdit(${s.id})">LƯU</button>
-                            <button class="btn-cancel-edit" onclick="cancelEdit()">HỦY</button>
+                        <div style="display:flex; gap:5px;">
+                            <button style="flex:1; padding:8px; background:var(--gold); color:white; border:none; border-radius:8px; font-size:10px;" onclick="saveInlineEdit(${s.id})">LƯU</button>
+                            <button style="flex:1; padding:8px; background:#888; color:white; border:none; border-radius:8px; font-size:10px;" onclick="cancelEdit()">HỦY</button>
                         </div>
                     </div>`;
                 }
 
                 return `
                 <div class="show-item ${s.status}">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="show-title">${s.title}</span>
-                        ${s.status === 'waiting' ? '<span class="wait-tag" style="color:#FF3B30; font-size:8px; border:1px solid #FF3B30; padding:1px 3px; border-radius:3px;">CHỜ</span>' : ''}
-                    </div>
-                    <div class="show-date">
-                        ${d.getDate()}/${d.getMonth()+1} | <span class="lunar-tag">${s.lunar}</span>
-                        ${s.status === 'paid' ? `<span class="money-tag"> | 💰 ${Number(s.money).toLocaleString()}</span>` : ''}
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <div class="show-title">${s.title}</div>
+                            <div class="lunar-main">🌙 Ngày ${s.lunarDay} Tháng ${s.lunarMonth} (Âm)</div>
+                            <div class="solar-sub">Dương lịch: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}</div>
+                        </div>
+                        ${s.status === 'paid' ? `<div class="money-tag" style="color:#34C759; font-weight:bold; font-size:13px;">+${Number(s.money).toLocaleString()}</div>` : ''}
                     </div>
                     <div class="actions">
                         ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">XONG</button>` : ''}
@@ -191,25 +183,6 @@
             document.getElementById('countMonth').innerText = count;
             document.getElementById('moneyMonth').innerText = total.toLocaleString() + 'đ';
         }
-
-        // Xử lý nén ảnh
-        document.getElementById('avatarInput').addEventListener('change', function(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('compressCanvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = 100; canvas.height = 100;
-                    ctx.drawImage(img, 0, 0, 100, 100);
-                    const data = canvas.toDataURL('image/jpeg', 0.7);
-                    avatarImg.src = data; localStorage.setItem('brand_avatar', data);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
 
         window.onload = render;
     </script>
