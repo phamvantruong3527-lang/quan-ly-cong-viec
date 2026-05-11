@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Đức Tú Event - Quản Lý Lịch Âm</title>
+    <title>Đức Tú Event - Quản Lý Lịch V31</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
@@ -25,6 +25,11 @@
             border-radius: 10px; border: 1px solid rgba(142,142,147,0.2); background: var(--bg); color: var(--text); font-size: 13px; text-align: center; outline: none; 
         }
         
+        /* Xem trước lúc chọn ngày: ÂM TRƯỚC - DƯƠNG SAU */
+        .lunar-preview { display: none; background: rgba(212,175,55,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 8px; margin-bottom: 10px; font-size: 13px; color: var(--gold); font-weight: bold; }
+        .lunar-preview.show { display: block; }
+        .solar-hint { font-size: 10px; color: var(--sub); font-weight: normal; display: block; margin-top: 2px; }
+
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 10px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer; display: block; margin: 0 auto; }
 
         .show-item { background: var(--card); padding: 8px 12px; border-radius: 12px; margin-top: 8px; border-left: 3px solid #444; position: relative; }
@@ -32,8 +37,10 @@
         .show-item.waiting { border-left-color: #FF3B30; }
 
         .show-title { font-size: 14px; font-weight: bold; }
-        .lunar-main { font-size: 15px; color: var(--gold); font-weight: bold; margin-top: 2px; }
-        .solar-sub { font-size: 10px; color: var(--sub); }
+        
+        /* Xem lại ở danh sách: DƯƠNG TRƯỚC - ÂM SAU */
+        .solar-main { font-size: 13px; font-weight: bold; color: var(--text); }
+        .lunar-sub { font-size: 11px; color: var(--gold); font-weight: bold; margin-left: 5px; }
 
         .actions { margin-top: 6px; display: flex; gap: 4px; }
         .btn-act { flex: 1; border: none; padding: 5px; border-radius: 6px; font-size: 9px; font-weight: bold; color: white; cursor: pointer; }
@@ -42,7 +49,7 @@
         .btn-edit { background: #5856D6; flex: none; width: 35px; }
         .btn-del { background: #8E8E93; flex: none; width: 30px; }
 
-        .inline-edit-box { background: rgba(212,175,55,0.1); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
+        .inline-edit-box { background: rgba(212,175,55,0.05); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
     </style>
 </head>
 <body id="mainBody">
@@ -56,50 +63,56 @@
     </div>
 
     <div class="summary-card">
-        <div class="summary-item"><b id="countMonth">0</b><span>Show Âm</span></div>
+        <div class="summary-item"><b id="countMonth">0</b><span>Show</span></div>
         <div class="summary-item">
-            <span style="font-size: 7px; display: block;">LỌC THÁNG ÂM</span>
-            <select id="lunarMonthFilter" style="width: 80px; margin: 0; padding: 2px; height: 25px; font-size: 11px;" onchange="render()">
+            <span style="font-size: 7px; display: block;">THÁNG ÂM</span>
+            <select id="lunarMonthFilter" style="width: 70px; margin: 0; padding: 2px; height: 25px; font-size: 11px;" onchange="render()">
                 <option value="01">Tháng 1</option><option value="02">Tháng 2</option><option value="03">Tháng 3</option>
                 <option value="04">Tháng 4</option><option value="05">Tháng 5</option><option value="06">Tháng 6</option>
                 <option value="07">Tháng 7</option><option value="08">Tháng 8</option><option value="09">Tháng 9</option>
                 <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
             </select>
         </div>
-        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Tiền Thu</span></div>
+        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Thu</span></div>
     </div>
 
     <div class="main-card">
         <input type="text" id="sTitle" placeholder="Tên khách hàng / Show">
         <input type="date" id="sTime">
+        <div class="lunar-preview" id="lunarPreview"></div>
         <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
     </div>
 
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v30')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v31')) || [];
         let editingId = null;
 
-        // Tự động chọn tháng âm hiện tại (tính tương đối)
+        // Tính tương đối tháng âm hiện tại cho bộ lọc
         const currentLunarMonth = String(Math.floor((new Date() - new Date(2026, 1, 17)) / 86400000 / 30) + 1).padStart(2, '0');
         document.getElementById('lunarMonthFilter').value = (currentLunarMonth > 12) ? "12" : currentLunarMonth;
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
-        // Hàm tính lịch âm (Logic 2026: mùng 1 Tết là 17/02/2026 Dương)
         function getLunarData(str) {
             const d = new Date(str);
-            const start = new Date(2026, 1, 17); // 17-02-2026
+            const start = new Date(2026, 1, 17); // Mùng 1 Tết 2026
             const diff = Math.floor((d - start) / 86400000) + 1;
             let ld = (diff % 30); if(ld <= 0) ld += 30;
             let lm = Math.floor(diff / 30) + 1;
-            return { 
-                day: String(ld).padStart(2, '0'), 
-                month: String(lm).padStart(2, '0'),
-                full: `${String(ld).padStart(2, '0')}/${String(lm).padStart(2, '0')}`
-            };
+            return { day: String(ld).padStart(2, '0'), month: String(lm).padStart(2, '0') };
         }
+
+        // Xử lý hiện xem trước khi chọn ngày
+        document.getElementById('sTime').addEventListener('change', function() {
+            const preview = document.getElementById('lunarPreview');
+            if(!this.value) { preview.classList.remove('show'); return; }
+            const d = new Date(this.value);
+            const lunar = getLunarData(this.value);
+            preview.innerHTML = `🌙 Ngày Âm: ${lunar.day}/${lunar.month} <span class="solar-hint">Dương lịch: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}</span>`;
+            preview.classList.add('show');
+        });
 
         function saveShow() {
             const title = document.getElementById('sTitle').value, time = document.getElementById('sTime').value;
@@ -107,10 +120,12 @@
             const lunar = getLunarData(time);
             shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunarDay: lunar.day, lunarMonth: lunar.month });
             updateData();
-            document.getElementById('sTitle').value = ''; document.getElementById('sTime').value = '';
+            document.getElementById('sTitle').value = ''; 
+            document.getElementById('sTime').value = '';
+            document.getElementById('lunarPreview').classList.remove('show');
         }
 
-        function updateData() { localStorage.setItem('duc_tu_v30', JSON.stringify(shows)); render(); }
+        function updateData() { localStorage.setItem('duc_tu_v31', JSON.stringify(shows)); render(); }
 
         function startEdit(id) { editingId = id; render(); }
         function cancelEdit() { editingId = null; render(); }
@@ -132,7 +147,7 @@
         function setStatus(id, type) {
             const s = shows.find(x => x.id === id);
             if(type === 'done') {
-                const m = prompt("Số tiền nhận được?");
+                const m = prompt("Tiền thực thu?");
                 if(m !== null) { s.money = Number(m); s.status = 'paid'; }
             } else { s.status = 'waiting'; }
             updateData();
@@ -167,10 +182,12 @@
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div>
                             <div class="show-title">${s.title}</div>
-                            <div class="lunar-main">🌙 Ngày ${s.lunarDay} Tháng ${s.lunarMonth} (Âm)</div>
-                            <div class="solar-sub">Dương lịch: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}</div>
+                            <div style="margin-top:2px;">
+                                <span class="solar-main">📅 ${d.getDate()}/${d.getMonth()+1}</span>
+                                <span class="lunar-sub">🌙 Âm: ${s.lunarDay}/${s.lunarMonth}</span>
+                            </div>
                         </div>
-                        ${s.status === 'paid' ? `<div class="money-tag" style="color:#34C759; font-weight:bold; font-size:13px;">+${Number(s.money).toLocaleString()}</div>` : ''}
+                        ${s.status === 'paid' ? `<div style="color:#34C759; font-weight:bold; font-size:12px;">+${Number(s.money).toLocaleString()}</div>` : ''}
                     </div>
                     <div class="actions">
                         ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">XONG</button>` : ''}
