@@ -20,7 +20,6 @@
 
         .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
         
-        /* Thu nhỏ khung chọn ngày bằng với khung nhập tên */
         input { 
             width: 100%; 
             padding: 12px; 
@@ -33,6 +32,14 @@
             font-size: 14px;
             text-align: center;
             outline: none;
+        }
+
+        input[type="datetime-local"] {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            appearance: none;
+            -webkit-appearance: none;
         }
 
         .date-box { position: relative; width: 100%; }
@@ -95,7 +102,6 @@
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
-        // Thuật toán Lịch Âm chính xác cho 2026
         function getLunar(str) {
             const d = new Date(str);
             const start = new Date(2026, 1, 17); 
