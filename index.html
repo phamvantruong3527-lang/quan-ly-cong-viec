@@ -2,240 +2,140 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Show Diễn Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Đức Tú Event - Quản Lý Lịch Diễn</title>
     <style>
-        :root {
-            --primary: #FF3B30;
-            --bg: #F2F2F7;
-            --card: #FFFFFF;
-            --text: #000000;
-            --accent: #007AFF;
-            --success: #34C759;
-        }
-
-        [data-theme="dark"] {
-            --bg: #1C1C1E;
-            --card: #2C2C2E;
-            --text: #FFFFFF;
-        }
-
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            transition: 0.3s;
-        }
-
-        /* Header & Clock */
-        .header { text-align: center; margin-bottom: 25px; }
-        #live-clock { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        :root { --gold: #D4AF37; --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; }
         
-        /* Avatar Section */
-        .profile-section { text-align: center; margin-bottom: 20px; }
-        .avatar-container {
-            width: 80px; height: 80px; border-radius: 50%;
-            border: 3px solid var(--accent); margin: 0 auto;
-            overflow: hidden; cursor: pointer; background: #ddd;
-        }
-        #avatar-img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Form Card */
-        .card {
-            background: var(--card); padding: 20px;
-            border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        input, select, button {
-            width: 100%; padding: 12px; margin: 8px 0;
-            border-radius: 10px; border: 1px solid #ddd;
-            box-sizing: border-box; font-size: 1rem;
-        }
-
-        button {
-            background: var(--accent); color: white;
-            border: none; font-weight: bold; cursor: pointer;
-        }
-
-        .theme-toggle { position: fixed; top: 10px; right: 10px; width: auto; padding: 5px 15px; }
-
-        /* Show List */
-        .show-item {
-            background: var(--card); padding: 15px;
-            border-left: 5px solid var(--accent);
-            border-radius: 10px; margin-bottom: 10px;
-        }
-        .status-btn { display: flex; gap: 5px; margin-top: 10px; }
-        .btn-done { background: var(--success); flex: 1; }
-        .btn-wait { background: #FF9500; flex: 1; }
-
-        .total-box {
-            background: var(--accent); color: white;
-            padding: 15px; border-radius: 12px; text-align: center;
-        }
+        .header { display: flex; align-items: center; gap: 12px; padding: 20px 0; border-bottom: 1px solid #333; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
+        
+        .main-card { background: var(--card); padding: 20px; border-radius: 25px; margin-top: 20px; border: 1px solid #333; }
+        h3 { color: var(--gold); margin: 0 0 15px 0; text-transform: uppercase; font-size: 18px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; margin-left: 5px; }
+        input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #333; background: #2C2C2E; color: white; box-sizing: border-box; font-size: 15px; }
+        
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: black; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 800; font-size: 16px; margin-top: 5px; }
+        
+        .task-list { margin-top: 25px; }
+        .task-item { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 15px; border-left: 5px solid var(--gold); position: relative; }
+        .info b { color: var(--gold); font-size: 17px; display: block; margin-bottom: 5px; }
+        .info span { font-size: 13px; color: #ccc; display: block; margin-bottom: 3px; }
+        .money-tag { color: #34C759; font-weight: bold; font-size: 14px; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 12px; border-top: 1px solid #333; padding-top: 10px; }
+        .btn-edit { background: #007AFF; color: white; border: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        .btn-del { background: #FF3B30; color: white; border: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; }
     </style>
 </head>
-<body data-theme="light">
-
-    <button class="theme-toggle" onclick="toggleTheme()">🌓 Chế độ</button>
+<body>
 
     <div class="header">
-        <div class="profile-section">
-            <div class="avatar-container" onclick="document.getElementById('avatar-input').click()">
-                <img id="avatar-img" src="https://via.placeholder.com/80" alt="Avatar">
-            </div>
-            <input type="file" id="avatar-input" hidden accept="image/*" onchange="loadAvatar(event)">
+        <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
+        <div>
+            <b style="font-size: 18px; color: var(--gold);">ĐỨC TÚ EVENT</b><br>
+            <small style="color: #888;">Quản lý sự kiện & Tài chính</small>
         </div>
-        <div id="live-date">Thứ ... , Ngày ...</div>
-        <div id="live-clock">00:00:00</div>
     </div>
 
-    <div class="card">
-        <h3>📅 Thêm Lịch Show</h3>
-        <input type="text" id="show-name" placeholder="Tên Show/Địa điểm">
-        <input type="date" id="show-date" onchange="updateLunarDisplay()">
-        <div id="lunar-info" style="font-size: 0.8em; color: var(--accent);"></div>
-        <input type="time" id="show-time">
-        <label style="font-size: 0.8em;">🎵 Nhạc chuông:</label>
-        <input type="file" id="ringtone-input" accept="audio/*">
-        <button onclick="addShow()">Lưu Lịch Diễn</button>
+    <div class="main-card">
+        <h3>Lên lịch mới</h3>
+        <div class="input-group">
+            <input type="text" id="tTitle" placeholder="Tên khách hàng / Sự kiện...">
+        </div>
+        <div class="input-group">
+            <input type="datetime-local" id="tTime">
+            <label>Chọn ngày diễn (Dương lịch)</label>
+        </div>
+        <div class="input-group">
+            <input type="text" id="tMoney" placeholder="Số tiền đã nhận (VD: 2.000.000)">
+        </div>
+        <button class="btn-save" onclick="saveTask()">LƯU LỊCH DIỄN</button>
     </div>
 
-    <div class="total-box">
-        Tổng thu nhập tháng này: <span id="monthly-total">0</span> VNĐ
-    </div>
-
-    <h3>Danh sách Show</h3>
-    <div id="show-list"></div>
-
-    <audio id="alarm-sound"></audio>
+    <div class="task-list" id="list"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('myShows')) || [];
+        let tasks = JSON.parse(localStorage.getItem('duc_tu_v17')) || [];
 
-        // 1. Cập nhật ngày giờ
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('live-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById('live-clock').innerText = now.toLocaleTimeString('vi-VN');
-            checkAlarm(now);
-        }, 1000);
-
-        // 2. Chế độ sáng tối
-        function toggleTheme() {
-            const body = document.body;
-            const newTheme = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            body.setAttribute('data-theme', newTheme);
+        // Thuật toán tính lịch âm tương đối cho 2026
+        function getLunar(str) {
+            const d = new Date(str);
+            const start = new Date(2026, 1, 17); // Mùng 1 Tết 2026
+            const diff = Math.floor((d - start) / 86400000);
+            if (diff < 0) return "Đầu năm 2026";
+            let ld = (diff % 30) + 1, lm = Math.floor(diff / 30) + 1;
+            return `${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} (Âm)`;
         }
 
-        // 3. Xử lý ảnh đại diện
-        function loadAvatar(event) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                document.getElementById('avatar-img').src = reader.result;
-                localStorage.setItem('userAvatar', reader.result);
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-        if(localStorage.getItem('userAvatar')) document.getElementById('avatar-img').src = localStorage.getItem('userAvatar');
-
-        // 4. Thêm Show
-        function addShow() {
-            const name = document.getElementById('show-name').value;
-            const date = document.getElementById('show-date').value;
-            const time = document.getElementById('show-time').value;
-            const ringtone = document.getElementById('ringtone-input').files[0];
-
-            if(!name || !date || !time) return alert("Vui lòng nhập đủ thông tin!");
-
-            const newShow = {
-                id: Date.now(),
-                name, date, time,
-                status: 'pending',
-                money: 0,
-                ringtone: ringtone ? URL.createObjectURL(ringtone) : null
-            };
-
-            shows.push(newShow);
-            saveAndRender();
+        function formatMoney(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VNĐ";
         }
 
-        function saveAndRender() {
-            localStorage.setItem('myShows', JSON.stringify(shows));
-            renderShows();
-            updateTotal();
+        function saveTask() {
+            const title = document.getElementById('tTitle').value;
+            const time = document.getElementById('tTime').value;
+            const money = document.getElementById('tMoney').value;
+
+            if(!title || !time) return alert("Sếp nhập tên và ngày nhé!");
+
+            const newTask = { id: Date.now(), title, time, money, lunar: getLunar(time) };
+            tasks.push(newTask);
+            sync();
+            clearForm();
         }
 
-        function renderShows() {
-            const list = document.getElementById('show-list');
-            list.innerHTML = '';
-            shows.forEach(show => {
-                const div = document.createElement('div');
-                div.className = 'show-item';
-                div.innerHTML = `
-                    <strong>${show.name}</strong> <br>
-                    📅 ${show.date} | ⏰ ${show.time}
-                    <div class="status-btn">
-                        ${show.status === 'pending' ? `
-                            <button class="btn-done" onclick="completeShow(${show.id})">Hoàn thành</button>
-                            <button class="btn-wait" onclick="alert('Đã đánh dấu chờ thanh toán')">Chờ tiền</button>
-                        ` : `<span>✅ Đã nhận: ${show.money} VNĐ</span>`}
-                    </div>
-                `;
-                list.appendChild(div);
-            });
+        function clearForm() {
+            document.getElementById('tTitle').value = '';
+            document.getElementById('tTime').value = '';
+            document.getElementById('tMoney').value = '';
         }
 
-        function completeShow(id) {
-            const amount = prompt("Show này bạn nhận được bao nhiêu tiền?");
-            if (amount !== null) {
-                const show = shows.find(s => s.id === id);
-                show.status = 'done';
-                show.money = parseInt(amount) || 0;
-                saveAndRender();
+        function sync() {
+            localStorage.setItem('duc_tu_v17', JSON.stringify(tasks));
+            render();
+        }
+
+        function editTask(id) {
+            const t = tasks.find(x => x.id === id);
+            const newTitle = prompt("Sửa tên khách:", t.title);
+            const newMoney = prompt("Sửa số tiền đã nhận:", t.money);
+            if (newTitle !== null) t.title = newTitle;
+            if (newMoney !== null) t.money = newMoney;
+            sync();
+        }
+
+        function delTask(id) {
+            if(confirm("Xóa lịch diễn này của sếp?")) {
+                tasks = tasks.filter(x => x.id !== id);
+                sync();
             }
         }
 
-        function updateTotal() {
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const total = shows
-                .filter(s => new Date(s.date).getMonth() === currentMonth && s.status === 'done')
-                .reduce((sum, s) => sum + s.money, 0);
-            document.getElementById('monthly-total').innerText = total.toLocaleString();
+        function render() {
+            const area = document.getElementById('list');
+            tasks.sort((a,b) => new Date(a.time) - new Date(b.time));
+            area.innerHTML = tasks.map(t => `
+                <div class="task-item">
+                    <div class="info">
+                        <b>${t.title}</b>
+                        <span>📅 Dương: ${t.time.replace('T', ' ')}</span>
+                        <span>🌙 Âm lịch: ${t.lunar}</span>
+                        <span class="money-tag">💰 Đã nhận: ${t.money ? formatMoney(t.money) : '0 VNĐ'}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-edit" onclick="editTask(${t.id})">SỬA</button>
+                        <button class="btn-del" onclick="delTask(${t.id})">XÓA</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // 5. Thông báo & Nhạc chuông
-        function checkAlarm(now) {
-            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            const currentDate = now.toISOString().split('T')[0];
-
-            shows.forEach(show => {
-                if(show.date === currentDate && show.time === currentTime && !show.notified) {
-                    show.notified = true;
-                    if(show.ringtone) {
-                        const audio = document.getElementById('alarm-sound');
-                        audio.src = show.ringtone;
-                        audio.play();
-                    }
-                    alert(`⏰ BẮT ĐẦU SHOW: ${show.name}`);
-                }
-            });
-        }
-
-        // 6. Hiển thị lịch âm (Giả lập đơn giản - thực tế cần thư viện đầy đủ)
-        function updateLunarDisplay() {
-            const date = document.getElementById('show-date').value;
-            // Ở đây bạn có thể tích hợp thư viện amlich.js. 
-            // Tạm thời hiển thị nhắc nhở:
-            document.getElementById('lunar-info').innerText = "Đã chọn ngày dương: " + date + " (Âm lịch tương ứng)";
-        }
-
-        renderShows();
-        updateTotal();
+        window.onload = render;
     </script>
 </body>
 </html>
