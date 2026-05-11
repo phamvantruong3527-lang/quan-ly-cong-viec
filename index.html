@@ -12,38 +12,46 @@
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
+        
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
         .avatar-box { display: flex; align-items: center; gap: 10px; }
         .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; position: relative; flex-shrink: 0; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .avatar-hint { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 16px; opacity: 0; transition: opacity 0.2s; border-radius: 50%; }
-        .avatar:active .avatar-hint { opacity: 1; }
         #avatarInput { display: none; }
-        .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; min-width: 80px; max-width: 200px; font-family: -apple-system, sans-serif; cursor: text; }
-        .editable-name:focus { border-bottom: 1.5px solid var(--gold); }
+        
+        .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; min-width: 80px; font-family: -apple-system, sans-serif; }
+
+        /* Summary Card */
         .summary-card { background: var(--card); padding: 15px; border-radius: 20px; margin: 15px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; }
         .summary-item b { color: var(--gold); font-size: 16px; display: block; }
         .summary-item span { font-size: 9px; color: var(--sub); text-transform: uppercase; }
-        .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+
+        /* Filter Section */
+        .filter-section { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .month-select { background: var(--card); color: var(--gold); border: 1px solid var(--gold); padding: 5px 12px; border-radius: 10px; font-weight: bold; outline: none; }
+
+        .main-card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
         input[type="text"], input[type="date"] { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 14px; border: 1.5px solid rgba(142,142,147,0.3); background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 14px; text-align: center; outline: none; }
-        input[type="date"] { appearance: none; -webkit-appearance: none; }
-        .date-box { position: relative; width: 100%; }
-        .date-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; color: var(--gold); pointer-events: none; opacity: 0.8; font-weight: bold; width: 100%; }
-        #sTime:focus + .date-label, #sTime:valid + .date-label { display: none; }
-        .lunar-preview { display: none; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 9px 14px; margin-bottom: 12px; font-size: 13px; color: var(--gold); font-weight: bold; text-align: center; letter-spacing: 0.2px; }
+        
+        .lunar-preview { display: none; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 9px; margin-bottom: 12px; font-size: 13px; color: var(--gold); font-weight: bold; }
         .lunar-preview.show { display: block; }
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 16px; font-weight: bold; font-size: 15px; margin-top: 5px; cursor: pointer; }
+
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 15px; width: 100%; border-radius: 16px; font-weight: bold; font-size: 15px; cursor: pointer; }
+
+        /* Show Item */
         .show-item { background: var(--card); padding: 15px; border-radius: 20px; margin-top: 12px; border-left: 5px solid #444; }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
+
         .actions { margin-top: 12px; display: flex; gap: 8px; }
         .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; }
         .btn-done { background: #34C759; }
         .btn-wait { background: #FF3B30; }
+        .btn-edit { background: #5856D6; width: 45px; flex: none; }
         .btn-del { background: #8E8E93; width: 40px; flex: none; }
+
         .money-display { color: #34C759; font-weight: bold; font-size: 14px; margin-top: 5px; display: block; }
-        .wait-tag { color: #FF3B30; font-size: 12px; font-weight: bold; }
-        .lunar-text { color: var(--gold); font-weight: bold; }
+        .wait-tag { color: #FF3B30; font-size: 11px; font-weight: bold; }
     </style>
 </head>
 <body id="mainBody" class="dark">
@@ -54,51 +62,58 @@
         <div class="avatar-box">
             <div class="avatar" onclick="document.getElementById('avatarInput').click()">
                 <img id="avatarImg" src="" alt="avatar">
-                <div class="avatar-hint">📷</div>
             </div>
-            <input class="editable-name" id="brandName" type="text" value="" maxlength="30" spellcheck="false">
+            <input class="editable-name" id="brandName" type="text" value="">
         </div>
-        <button onclick="toggleTheme()" style="background:none; border:none; font-size:22px; cursor:pointer;">🌓</button>
+        <button onclick="toggleTheme()" style="background:none; border:none; font-size:22px;">🌓</button>
+    </div>
+
+    <div class="filter-section">
+        <span style="font-size: 13px; font-weight: bold;">THÁNG:</span>
+        <input type="month" id="monthFilter" class="month-select" onchange="render()">
     </div>
 
     <div class="summary-card">
-        <div class="summary-item"><b id="count30">0</b><span>Show (30 ngày)</span></div>
-        <div class="summary-item"><b id="money30">0đ</b><span>Đã thu tiền</span></div>
+        <div class="summary-item"><b id="countMonth">0</b><span>Show Tháng</span></div>
+        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Tiền Thực Thu</span></div>
     </div>
 
     <div class="main-card">
         <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
-        <div class="date-box">
-            <input type="date" id="sTime" required>
-            <div class="date-label">CHỌN NGÀY DIỄN</div>
-        </div>
+        <input type="date" id="sTime">
         <div class="lunar-preview" id="lunarPreview">🌙 —</div>
-        <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
+        <button id="mainBtn" class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
     </div>
 
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v24')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v26')) || [];
+        let editingId = null;
 
+        // Tự động chọn tháng hiện tại cho bộ lọc
+        const now = new Date();
+        const currentMonthStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('monthFilter').value = currentMonthStr;
+
+        // Thiết lập tên và avatar
         const nameEl = document.getElementById('brandName');
         nameEl.value = localStorage.getItem('brand_name') || 'ĐỨC TÚ EVENT';
         nameEl.addEventListener('input', () => localStorage.setItem('brand_name', nameEl.value));
 
         const avatarImg = document.getElementById('avatarImg');
-        const savedAvatar = localStorage.getItem('brand_avatar');
-        avatarImg.src = savedAvatar || 'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
+        avatarImg.src = localStorage.getItem('brand_avatar') || 'https://i.postimg.cc/bvLYr4mW/671682828-122098459472734577-1752480557510973163-n.jpg';
 
         document.getElementById('avatarInput').addEventListener('change', function() {
             const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarImg.src = e.target.result;
-                try { localStorage.setItem('brand_avatar', e.target.result); }
-                catch(err) { alert('Ảnh quá lớn sếp ơi!'); }
-            };
-            reader.readAsDataURL(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    avatarImg.src = e.target.result;
+                    localStorage.setItem('brand_avatar', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
@@ -125,7 +140,18 @@
         function saveShow() {
             const title = document.getElementById('sTitle').value, time = document.getElementById('sTime').value;
             if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
-            shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunar: getLunar(time) });
+            
+            if(editingId) {
+                const idx = shows.findIndex(x => x.id === editingId);
+                shows[idx].title = title;
+                shows[idx].time = time;
+                shows[idx].lunar = getLunar(time);
+                editingId = null;
+                document.getElementById('mainBtn').innerText = "LƯU LỊCH DIỄN";
+            } else {
+                shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunar: getLunar(time) });
+            }
+            
             updateData();
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value = '';
@@ -141,45 +167,56 @@
             updateData();
         }
 
+        function editShow(id) {
+            const s = shows.find(x => x.id === id);
+            editingId = id;
+            document.getElementById('sTitle').value = s.title;
+            document.getElementById('sTime').value = s.time;
+            document.getElementById('mainBtn').innerText = "CẬP NHẬT THAY ĐỔI";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
 
         function updateData() {
-            localStorage.setItem('duc_tu_v24', JSON.stringify(shows));
+            localStorage.setItem('duc_tu_v26', JSON.stringify(shows));
             render();
         }
 
         function render() {
             const area = document.getElementById('showList');
-            const now = new Date();
-            const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+            const selectedMonth = document.getElementById('monthFilter').value; // Định dạng "YYYY-MM"
+            
             let totalMoney = 0, count = 0;
             shows.sort((a,b) => new Date(a.time) - new Date(b.time));
-            area.innerHTML = shows.map(s => {
-                const sDate = new Date(s.time);
-                if(sDate >= thirtyDaysAgo) { count++; totalMoney += Number(s.money); }
-                // Định dạng ngày hiển thị dd/mm/yyyy
+
+            area.innerHTML = shows.filter(s => s.time.startsWith(selectedMonth)).map(s => {
+                count++;
+                totalMoney += Number(s.money);
                 const d = new Date(s.time);
                 const dateStr = d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+                
                 return `
                 <div class="show-item ${s.status}">
                     <div style="display:flex; justify-content:space-between;">
                         <b style="font-size:17px;">${s.title}</b>
                         ${s.status === 'waiting' ? '<span class="wait-tag">🚩 CHỜ TIỀN</span>' : ''}
                     </div>
-                    <div style="font-size:12px; color:var(--sub); margin-top:8px; line-height:1.5;">
-                        📅 Dương: ${dateStr} <br>
-                        🌙 Lịch Âm: <span class="lunar-text">${s.lunar}</span>
-                        ${s.status === 'paid' ? `<span class="money-display">💰 Đã nhận: ${Number(s.money).toLocaleString()}đ</span>` : ''}
+                    <div style="font-size:12px; color:var(--sub); margin-top:8px;">
+                        📅 Dương: ${dateStr} | 🌙 Âm: <span style="color:var(--gold); font-weight:bold;">${s.lunar}</span>
+                        ${s.status === 'paid' ? `<span class="money-display">💰 Nhận: ${Number(s.money).toLocaleString()}đ</span>` : ''}
                     </div>
                     <div class="actions">
-                        ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">HOÀN THÀNH</button>` : ''}
-                        ${s.status === 'new' ? `<button class="btn-act btn-wait" onclick="setStatus(${s.id}, 'wait')">CHỜ TIỀN</button>` : ''}
+                        ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">XONG</button>` : ''}
+                        ${s.status === 'new' ? `<button class="btn-act btn-wait" onclick="setStatus(${s.id}, 'wait')">CHỜ</button>` : ''}
+                        <button class="btn-act btn-edit" onclick="editShow(${s.id})">SỬA</button>
                         <button class="btn-act btn-del" onclick="del(${s.id})">XÓA</button>
                     </div>
                 </div>`;
             }).join('');
-            document.getElementById('count30').innerText = count;
-            document.getElementById('money30').innerText = totalMoney.toLocaleString() + 'đ';
+
+            document.getElementById('countMonth').innerText = count;
+            document.getElementById('moneyMonth').innerText = totalMoney.toLocaleString() + 'đ';
         }
         window.onload = render;
     </script>
