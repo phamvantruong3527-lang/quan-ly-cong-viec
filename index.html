@@ -3,52 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Đức Tú Event - Quản Lý Lịch V35</title>
+    <title>Đức Tú Event - Quản Lý Lịch V36</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
         
         .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(142,142,147,0.1); }
-        .avatar-box { display: flex; align-items: center; gap: 8px; }
+        .avatar-box { display: flex; align-items: center; gap: 10px; }
         
-        /* Click vào ảnh để chọn từ thư mục */
-        .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; position: relative; background: #eee; }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        /* FIXED: Chống bóp méo ảnh đại diện */
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; background: #eee; flex-shrink: 0; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         #fileInput { display: none; }
 
-        .editable-name { color: var(--gold); font-size: 15px; font-weight: bold; border: none; background: transparent; outline: none; width: 150px; }
+        .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; width: 150px; }
 
         .summary-card { background: var(--card); padding: 10px; border-radius: 15px; margin: 10px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; align-items: center; }
         .summary-item b { color: var(--gold); font-size: 14px; display: block; }
         .summary-item span { font-size: 8px; color: var(--sub); text-transform: uppercase; }
 
         .main-card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
-        .input-label { font-size: 11px; color: var(--sub); margin-bottom: 4px; display: block; text-align: left; margin-left: calc(50% - 130px); }
+        
+        /* FIXED: Đưa ngày chạy show vào trong khung */
+        .date-input-group { background: rgba(142,142,147,0.08); padding: 10px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(142,142,147,0.1); }
+        .input-label { font-size: 11px; color: var(--gold); font-weight: bold; margin-bottom: 6px; display: block; text-transform: uppercase; }
         
         input[type="text"], input[type="date"], select { 
-            width: 100%; max-width: 260px; padding: 8px; margin: 0 auto 10px auto; display: block;
-            border-radius: 10px; border: 1px solid rgba(142,142,147,0.2); background: var(--bg); color: var(--text); font-size: 13px; text-align: center; outline: none; 
+            width: 100%; max-width: 260px; padding: 10px; margin: 0 auto 10px auto; display: block;
+            border-radius: 10px; border: 1px solid rgba(142,142,147,0.2); background: var(--bg); color: var(--text); font-size: 14px; text-align: center; outline: none; 
         }
         
-        .lunar-preview { display: none; background: rgba(0,0,0,0.05); border: 1px solid var(--sub); border-radius: 10px; padding: 8px; margin-bottom: 10px; font-size: 13px; color: var(--text); font-weight: bold; }
+        .lunar-preview { display: none; background: rgba(212,175,55,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 8px; margin-top: 5px; font-size: 13px; color: var(--text); font-weight: bold; }
         .lunar-preview.show { display: block; }
 
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer; display: block; margin: 0 auto; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; display: block; margin: 0 auto; }
 
-        .show-item { background: var(--card); padding: 8px 12px; border-radius: 12px; margin-top: 8px; border-left: 3px solid #444; }
+        .show-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #444; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
 
         .lunar-main { font-size: 14px; font-weight: bold; color: var(--gold); }
         .solar-sub { font-size: 10px; color: var(--sub); margin-left: 5px; }
 
-        .actions { margin-top: 6px; display: flex; gap: 4px; }
-        .btn-act { flex: 1; border: none; padding: 6px; border-radius: 6px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; }
+        .actions { margin-top: 8px; display: flex; gap: 5px; }
+        .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; }
         .btn-done { background: #34C759; }
         .btn-wait { background: #FF3B30; }
-        .btn-edit { background: #5856D6; flex: none; width: 35px; }
-        .btn-del { background: #8E8E93; flex: none; width: 30px; }
+        .btn-edit { background: #5856D6; flex: none; width: 40px; }
+        .btn-del { background: #8E8E93; flex: none; width: 35px; }
 
         .inline-edit-box { background: rgba(212,175,55,0.05); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
     </style>
@@ -72,7 +75,7 @@
         <div class="summary-item"><b id="countMonth">0</b><span>Show</span></div>
         <div class="summary-item">
             <span style="font-size: 7px; display: block;">LỌC THÁNG ÂM</span>
-            <select id="lunarMonthFilter" style="width: 80px; margin: 0; padding: 2px; height: 25px; font-size: 11px;" onchange="render()">
+            <select id="lunarMonthFilter" style="width: 85px; margin: 0; padding: 2px; height: 28px; font-size: 12px;" onchange="render()">
                 <option value="01">Tháng 1</option><option value="02">Tháng 2</option><option value="03">Tháng 3</option>
                 <option value="04">Tháng 4</option><option value="05">Tháng 5</option><option value="06">Tháng 6</option>
                 <option value="06_nhuan">Tháng 6N</option><option value="07">Tháng 7</option><option value="08">Tháng 8</option>
@@ -84,25 +87,29 @@
 
     <div class="main-card">
         <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
-        <span class="input-label">Chọn ngày chạy show:</span>
-        <input type="date" id="sTime">
-        <div class="lunar-preview" id="lunarPreview"></div>
+        
+        <div class="date-input-group">
+            <span class="input-label">Lịch chạy show:</span>
+            <input type="date" id="sTime" style="margin-bottom: 0;">
+            <div class="lunar-preview" id="lunarPreview"></div>
+        </div>
+
         <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
     </div>
 
     <div id="showList"></div>
 
     <script>
-        // --- KHỞI TẠO DỮ LIỆU ---
-        let shows = JSON.parse(localStorage.getItem('duc_tu_data_v35')) || [];
+        // --- FIXED: Tên biến thống nhất để không mất dữ liệu ---
+        const DB_NAME = 'duc_tu_event_final'; 
+        let shows = JSON.parse(localStorage.getItem(DB_NAME)) || [];
         let editingId = null;
 
-        // --- QUẢN LÝ AVATAR & TÊN (LƯU VĨNH VIỄN) ---
         const avatarDisplay = document.getElementById('avatarDisplay');
         const brandNameInput = document.getElementById('brandName');
         const fileInput = document.getElementById('fileInput');
 
-        // Load ảnh và tên từ bộ nhớ khi mở app
+        // Khởi tạo
         window.addEventListener('load', () => {
             const savedAvatar = localStorage.getItem('user_avatar');
             const savedName = localStorage.getItem('user_brand_name');
@@ -111,12 +118,10 @@
             render();
         });
 
-        // Lưu tên khi sếp gõ
         brandNameInput.addEventListener('input', () => {
             localStorage.setItem('user_brand_name', brandNameInput.value);
         });
 
-        // Xử lý chọn ảnh và nén lại để lưu trữ
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -126,19 +131,17 @@
                 img.onload = function() {
                     const canvas = document.getElementById('canvas');
                     const ctx = canvas.getContext('2d');
-                    // Nén ảnh xuống 100x100 để không làm nặng bộ nhớ
-                    canvas.width = 100; canvas.height = 100;
-                    ctx.drawImage(img, 0, 0, 100, 100);
-                    const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+                    canvas.width = 150; canvas.height = 150;
+                    ctx.drawImage(img, 0, 0, 150, 150);
+                    const dataURL = canvas.toDataURL('image/jpeg', 0.9);
                     avatarDisplay.src = dataURL;
-                    localStorage.setItem('user_avatar', dataURL); // Lưu vĩnh viễn
+                    localStorage.setItem('user_avatar', dataURL);
                 };
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        // --- LOGIC LỊCH ÂM 2026 ---
         function getLunarData(str) {
             const d = new Date(str); d.setHours(0,0,0,0);
             const start = new Date(2026, 1, 17);
@@ -154,7 +157,6 @@
             return { day: "??", month: "??" };
         }
 
-        // Tự động chọn tháng âm hiện tại
         document.getElementById('lunarMonthFilter').value = getLunarData(new Date()).month;
 
         document.getElementById('sTime').addEventListener('change', function() {
@@ -176,7 +178,11 @@
             document.getElementById('lunarPreview').classList.remove('show');
         }
 
-        function updateData() { localStorage.setItem('duc_tu_data_v35', JSON.stringify(shows)); render(); }
+        function updateData() { 
+            localStorage.setItem(DB_NAME, JSON.stringify(shows)); 
+            render(); 
+        }
+
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
         function startEdit(id) { editingId = id; render(); }
         function cancelEdit() { editingId = null; render(); }
@@ -227,13 +233,13 @@
                 return `<div class="show-item ${s.status}">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div>
-                            <div class="show-title">${s.title}</div>
-                            <div style="margin-top:2px;">
+                            <div class="show-title" style="font-weight:bold; font-size:15px;">${s.title}</div>
+                            <div style="margin-top:4px;">
                                 <span class="lunar-main">🌙 Âm: ${s.lunarDay}/${mDisp}</span>
                                 <span class="solar-sub">📅 ${d.getDate()}/${d.getMonth()+1}</span>
                             </div>
                         </div>
-                        ${s.status === 'paid' ? `<div style="color:#34C759; font-weight:bold; font-size:12px;">+${Number(s.money).toLocaleString()}</div>` : ''}
+                        ${s.status === 'paid' ? `<div style="color:#34C759; font-weight:bold; font-size:13px;">+${Number(s.money).toLocaleString()}</div>` : ''}
                     </div>
                     <div class="actions">
                         ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">XONG</button>` : ''}
