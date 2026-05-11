@@ -4,87 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Event - Lịch Diễn</title>
+    <title>Đức Tú Event - Quản Lý Show</title>
     <style>
-        :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
-        body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
+        :root { --gold: #D4AF37; --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; }
         
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
-        .avatar-box { display: flex; align-items: center; gap: 10px; }
+        .header { display: flex; align-items: center; gap: 10px; padding: 15px 0; border-bottom: 1px solid #333; }
         .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
         
-        .main-card { background: var(--card); padding: 18px; border-radius: 22px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        
-        /* Ô nhập liệu siêu gọn */
-        .input-item { position: relative; margin-bottom: 10px; }
+        .summary-card { background: linear-gradient(135deg, #2C2C2E, #1C1C1E); padding: 15px; border-radius: 20px; margin: 15px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; }
+        .summary-item b { color: var(--gold); font-size: 18px; display: block; }
+        .summary-item span { font-size: 10px; color: var(--sub); text-transform: uppercase; }
+
+        .main-card { background: var(--card); padding: 20px; border-radius: 25px; border: 1px solid #333; }
         input { 
             width: 100%; 
-            padding: 12px 15px; 
+            padding: 12px; 
+            margin-bottom: 10px; 
             border-radius: 12px; 
-            border: 1px solid rgba(142,142,147,0.3); 
-            background: var(--bg); 
-            color: var(--text); 
+            border: 1px solid #444; 
+            background: #2C2C2E; 
+            color: white; 
             box-sizing: border-box; 
             font-size: 14px;
-            outline: none;
+            text-align: center;
         }
 
-        /* Ghi chú nhỏ lồng trong ô lịch */
-        .date-input-container { position: relative; }
+        .date-box { position: relative; }
         .date-label { 
             position: absolute; 
-            right: 12px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            font-size: 10px; 
-            color: var(--gold); 
-            pointer-events: none;
-            background: var(--bg);
-            padding: 2px 5px;
-            border-radius: 4px;
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            font-size: 12px; color: var(--gold); 
+            pointer-events: none; opacity: 0.7;
             font-weight: bold;
         }
+        #sTime:focus + .date-label, #sTime:valid + .date-label { display: none; }
+
+        .btn-save { background: var(--gold); color: black; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 15px; }
         
-        .lunar-preview { background: rgba(212, 175, 55, 0.1); padding: 10px; border-radius: 12px; color: var(--gold); font-weight: bold; font-size: 12px; text-align: center; display: none; margin: 5px 0; }
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 14px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 15px; margin-top: 5px; }
-        
-        .show-item { background: var(--card); padding: 15px; border-radius: 18px; margin-top: 12px; border-left: 5px solid var(--gold); position: relative; }
-        .actions { margin-top: 10px; display: flex; justify-content: flex-end; border-top: 1px solid rgba(142,142,147,0.1); padding-top: 8px; }
-        .btn-del { background: none; color: #FF3B30; border: none; font-size: 11px; font-weight: bold; }
+        .show-item { background: var(--card); padding: 15px; border-radius: 20px; margin-top: 12px; border-left: 5px solid #444; position: relative; }
+        .show-item.paid { border-left-color: #34C759; }
+        .show-item.waiting { border-left-color: #FF3B30; }
+
+        .actions { margin-top: 12px; display: flex; gap: 8px; }
+        .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; }
+        .btn-done { background: #34C759; }
+        .btn-wait { background: #FF3B30; }
+        .btn-del { background: #444; width: 40px; flex: none; }
+
+        .money-display { color: #34C759; font-weight: bold; font-size: 14px; margin-top: 5px; display: block; }
+        .wait-tag { color: #FF3B30; font-size: 12px; font-weight: bold; }
     </style>
 </head>
-<body id="mainBody" class="dark">
+<body>
 
     <div class="header">
-        <div class="avatar-box">
-            <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-            <b style="color: var(--gold); font-size: 16px;">ĐỨC TÚ EVENT</b>
-        </div>
-        <button onclick="toggleTheme()" style="background:none; border:none; font-size:18px;">🌓</button>
+        <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
+        <b style="color: var(--gold);">ĐỨC TÚ EVENT PRO</b>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-item"><b id="count30">0</b><span>Show (30 ngày)</span></div>
+        <div class="summary-item"><b id="money30">0đ</b><span>Tổng tiền nhận</span></div>
     </div>
 
     <div class="main-card">
-        <div class="input-item">
-            <input type="text" id="sTitle" placeholder="Tên khách / Show diễn...">
-        </div>
-        
-        <div class="input-item date-input-container">
-            <input type="datetime-local" id="sTime" onchange="previewLunar()">
+        <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
+        <div class="date-box">
+            <input type="datetime-local" id="sTime" required>
             <div class="date-label">CHỌN NGÀY DIỄN</div>
         </div>
-
-        <div id="lunarShow" class="lunar-preview"></div>
-        
         <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
     </div>
 
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v21')) || [];
-
-        function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v22')) || [];
 
         function getLunar(str) {
             const d = new Date(str);
@@ -94,45 +91,68 @@
             return `${ld < 10 ? '0'+ld : ld}/${lm < 10 ? '0'+lm : lm} (Âm)`;
         }
 
-        function previewLunar() {
-            const time = document.getElementById('sTime').value;
-            if(time) {
-                const preview = document.getElementById('lunarShow');
-                preview.style.display = 'block';
-                preview.innerText = "🌙 Lịch Âm: " + getLunar(time);
-            }
-        }
-
         function saveShow() {
             const title = document.getElementById('sTitle').value, time = document.getElementById('sTime').value;
-            if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
-            
-            shows.push({ id: Date.now(), title, time, lunar: getLunar(time) });
-            localStorage.setItem('duc_tu_v21', JSON.stringify(shows));
-            render();
-            
+            if(!title || !time) return;
+            shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunar: getLunar(time) });
+            updateData();
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value = '';
-            document.getElementById('lunarShow').style.display = 'none';
         }
 
-        function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); localStorage.setItem('duc_tu_v21', JSON.stringify(shows)); render(); } }
+        function setStatus(id, type) {
+            const s = shows.find(x => x.id === id);
+            if(type === 'done') {
+                const m = prompt("Sếp nhận được bao nhiêu tiền cho show này?");
+                if(m !== null) { s.money = Number(m); s.status = 'paid'; }
+            } else {
+                s.status = 'waiting';
+            }
+            updateData();
+        }
+
+        function del(id) { if(confirm("Xóa show này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
+
+        function updateData() {
+            localStorage.setItem('duc_tu_v22', JSON.stringify(shows));
+            render();
+        }
 
         function render() {
             const area = document.getElementById('showList');
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            let totalMoney = 0, count = 0;
             shows.sort((a,b) => new Date(a.time) - new Date(b.time));
-            area.innerHTML = shows.map(s => `
-                <div class="show-item">
-                    <b style="font-size:16px; display:block; margin-bottom:8px;">${s.title}</b>
-                    <div style="font-size:12px; line-height:1.5; color:var(--sub);">
-                        <b>📅 Dương:</b> ${s.time.replace('T', ' - ')} <br>
-                        <b>🌙 Âm lịch:</b> ${s.lunar}
+
+            area.innerHTML = shows.map(s => {
+                const sDate = new Date(s.time);
+                if(sDate >= thirtyDaysAgo) {
+                    count++;
+                    totalMoney += Number(s.money);
+                }
+
+                return `
+                <div class="show-item ${s.status}">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <b>${s.title}</b>
+                        ${s.status === 'waiting' ? '<span class="wait-tag">🚩 CHỜ TIỀN</span>' : ''}
+                    </div>
+                    <div style="font-size:12px; color:var(--sub); margin-top:5px;">
+                        📅 ${s.time.replace('T',' ')} | 🌙 ${s.lunar}
+                        ${s.status === 'paid' ? `<span class="money-display">💰 +${Number(s.money).toLocaleString()}đ</span>` : ''}
                     </div>
                     <div class="actions">
-                        <button class="btn-del" onclick="del(${s.id})">XÓA LỊCH</button>
+                        ${s.status === 'new' || s.status === 'waiting' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id}, 'done')">HOÀN THÀNH</button>` : ''}
+                        ${s.status === 'new' ? `<button class="btn-act btn-wait" onclick="setStatus(${s.id}, 'wait')">CHỜ TIỀN</button>` : ''}
+                        <button class="btn-act btn-del" onclick="del(${s.id})">XÓA</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
+
+            document.getElementById('count30').innerText = count;
+            document.getElementById('money30').innerText = totalMoney.toLocaleString() + 'đ';
         }
         window.onload = render;
     </script>
