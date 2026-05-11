@@ -4,39 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Đức Tú Event - Quản Lý Show</title>
+    <title>Đức Tú Event - Lịch Diễn</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
         
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: env(safe-area-inset-top) 15px 30px 15px; transition: 0.3s; }
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(142,142,147,0.2); }
-        .avatar-box { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
+        .avatar-box { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; }
         
-        .main-card { background: var(--card); padding: 22px; border-radius: 28px; margin-top: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); border: 1px solid rgba(212,175,55,0.1); }
+        .main-card { background: var(--card); padding: 18px; border-radius: 22px; margin-top: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         
+        /* Ô nhập liệu siêu gọn */
+        .input-item { position: relative; margin-bottom: 10px; }
         input { 
             width: 100%; 
-            padding: 14px; 
-            margin: 10px 0; 
-            border-radius: 16px; 
-            border: 1.5px solid rgba(142,142,147,0.3); 
+            padding: 12px 15px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(142,142,147,0.3); 
             background: var(--bg); 
             color: var(--text); 
             box-sizing: border-box; 
-            font-size: 15px;
+            font-size: 14px;
             outline: none;
         }
+
+        /* Ghi chú nhỏ lồng trong ô lịch */
+        .date-input-container { position: relative; }
+        .date-label { 
+            position: absolute; 
+            right: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 10px; 
+            color: var(--gold); 
+            pointer-events: none;
+            background: var(--bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
         
-        .lunar-preview { background: rgba(212, 175, 55, 0.1); padding: 12px; border-radius: 15px; color: var(--gold); font-weight: bold; font-size: 13px; text-align: center; display: none; margin: 5px 0; }
-        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 16px; width: 100%; border-radius: 18px; font-weight: bold; font-size: 16px; margin-top: 10px; box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
+        .lunar-preview { background: rgba(212, 175, 55, 0.1); padding: 10px; border-radius: 12px; color: var(--gold); font-weight: bold; font-size: 12px; text-align: center; display: none; margin: 5px 0; }
+        .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 14px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 15px; margin-top: 5px; }
         
-        .show-item { background: var(--card); padding: 20px; border-radius: 24px; margin-top: 15px; border-left: 6px solid var(--gold); position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .money-tag { color: #34C759; font-weight: 800; font-size: 15px; background: rgba(52,199,89,0.1); padding: 4px 12px; border-radius: 12px; }
-        
-        .actions { margin-top: 15px; display: flex; gap: 10px; border-top: 1px solid rgba(142,142,147,0.1); padding-top: 12px; }
-        .btn-del { background: rgba(255,59,48,0.1); color: #FF3B30; border: none; padding: 8px 15px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        .show-item { background: var(--card); padding: 15px; border-radius: 18px; margin-top: 12px; border-left: 5px solid var(--gold); position: relative; }
+        .actions { margin-top: 10px; display: flex; justify-content: flex-end; border-top: 1px solid rgba(142,142,147,0.1); padding-top: 8px; }
+        .btn-del { background: none; color: #FF3B30; border: none; font-size: 11px; font-weight: bold; }
     </style>
 </head>
 <body id="mainBody" class="dark">
@@ -44,24 +59,30 @@
     <div class="header">
         <div class="avatar-box">
             <div class="avatar"><img src="https://api.clippid.com/storage/v1/object/public/images/96a603c4-e867-4581-9b16-65103a89370b/1714902120000.jpg" width="100%"></div>
-            <b style="color: var(--gold); letter-spacing: 0.5px;">ĐỨC TÚ EVENT</b>
+            <b style="color: var(--gold); font-size: 16px;">ĐỨC TÚ EVENT</b>
         </div>
-        <button onclick="toggleTheme()" style="background:none; border:none; font-size:22px;">🌓</button>
+        <button onclick="toggleTheme()" style="background:none; border:none; font-size:18px;">🌓</button>
     </div>
 
     <div class="main-card">
-        <input type="text" id="sTitle" placeholder="Tên khách / Show diễn...">
-        <input type="datetime-local" id="sTime" onchange="previewLunar()">
-        <div id="lunarShow" class="lunar-preview"></div>
-        <input type="number" id="sMoney" placeholder="Số tiền đã nhận (VNĐ)...">
+        <div class="input-item">
+            <input type="text" id="sTitle" placeholder="Tên khách / Show diễn...">
+        </div>
         
-        <button class="btn-save" onclick="saveShow()">LƯU SHOW DIỄN</button>
+        <div class="input-item date-input-container">
+            <input type="datetime-local" id="sTime" onchange="previewLunar()">
+            <div class="date-label">CHỌN NGÀY DIỄN</div>
+        </div>
+
+        <div id="lunarShow" class="lunar-preview"></div>
+        
+        <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
     </div>
 
     <div id="showList"></div>
 
     <script>
-        let shows = JSON.parse(localStorage.getItem('duc_tu_v20')) || [];
+        let shows = JSON.parse(localStorage.getItem('duc_tu_v21')) || [];
 
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
 
@@ -78,42 +99,37 @@
             if(time) {
                 const preview = document.getElementById('lunarShow');
                 preview.style.display = 'block';
-                preview.innerText = "🌙 Ngày Âm: " + getLunar(time);
+                preview.innerText = "🌙 Lịch Âm: " + getLunar(time);
             }
         }
 
         function saveShow() {
             const title = document.getElementById('sTitle').value, time = document.getElementById('sTime').value;
-            const money = document.getElementById('sMoney').value;
             if(!title || !time) return alert("Sếp điền đủ thông tin nhé!");
             
-            shows.push({ id: Date.now(), title, time, money: money||0, lunar: getLunar(time) });
-            localStorage.setItem('duc_tu_v20', JSON.stringify(shows));
+            shows.push({ id: Date.now(), title, time, lunar: getLunar(time) });
+            localStorage.setItem('duc_tu_v21', JSON.stringify(shows));
             render();
             
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value = '';
-            document.getElementById('sMoney').value = '';
             document.getElementById('lunarShow').style.display = 'none';
         }
 
-        function del(id) { if(confirm("Xóa show này nhé sếp?")) { shows = shows.filter(x => x.id !== id); localStorage.setItem('duc_tu_v20', JSON.stringify(shows)); render(); } }
+        function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); localStorage.setItem('duc_tu_v21', JSON.stringify(shows)); render(); } }
 
         function render() {
             const area = document.getElementById('showList');
             shows.sort((a,b) => new Date(a.time) - new Date(b.time));
             area.innerHTML = shows.map(s => `
                 <div class="show-item">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b style="font-size:18px;">${s.title}</b>
-                        <span class="money-tag">💰 ${Number(s.money).toLocaleString()}đ</span>
-                    </div>
-                    <div style="font-size:13px; margin-top:10px; line-height:1.6; color:var(--sub);">
-                        <b>📅 Dương:</b> ${s.time.replace('T', ' lúc ')} <br>
+                    <b style="font-size:16px; display:block; margin-bottom:8px;">${s.title}</b>
+                    <div style="font-size:12px; line-height:1.5; color:var(--sub);">
+                        <b>📅 Dương:</b> ${s.time.replace('T', ' - ')} <br>
                         <b>🌙 Âm lịch:</b> ${s.lunar}
                     </div>
                     <div class="actions">
-                        <button class="btn-del" onclick="del(${s.id})">Xóa lịch</button>
+                        <button class="btn-del" onclick="del(${s.id})">XÓA LỊCH</button>
                     </div>
                 </div>
             `).join('');
