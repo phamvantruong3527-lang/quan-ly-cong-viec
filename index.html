@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Đức Tú Event - Quản Lý Lịch</title>
+    <title>Sự Kiện Đức Trường - Quản Lý Show V28 Vip</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
@@ -34,7 +34,29 @@
         .tab-content.active { display: block; }
         .tab-section-title { font-size: 13px; font-weight: bold; color: var(--sub); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
 
-        .main-card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
+        /* Nút toggle dùng chung */
+        .toggle-detail-btn {
+            width: 100%; background: var(--card);
+            border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 12px; padding: 11px 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; margin-bottom: 8px; transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .toggle-detail-btn:hover { border-color: var(--gold); }
+        .toggle-detail-btn.add-btn { border-color: rgba(212,175,55,0.5); }
+        .toggle-detail-btn .btn-label { font-size: 13px; font-weight: 600; color: var(--text); }
+        .toggle-detail-btn .btn-arrow {
+            font-size: 12px; color: var(--sub);
+            display: flex; align-items: center; gap: 4px;
+            transition: transform 0.25s;
+        }
+        .toggle-detail-btn.open .btn-arrow { transform: rotate(90deg); }
+
+        /* Form thêm show — ẩn/hiện */
+        .add-form-wrap { display: none; margin-bottom: 10px; }
+        .add-form-wrap.open { display: block; }
+        .main-card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; }
 
         input[type="text"], input[type="date"] {
             width: 100%; max-width: 260px; padding: 10px;
@@ -55,30 +77,7 @@
 
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; display: block; margin: 0 auto; }
 
-        .old-month-banner { background: var(--card); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 18px 15px; text-align: center; margin-bottom: 15px; }
-        .old-month-banner .month-num { font-size: 42px; font-weight: bold; color: var(--gold); line-height: 1; }
-        .old-month-banner .month-sub { font-size: 12px; color: var(--sub); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .old-month-banner .show-count { font-size: 15px; font-weight: bold; color: var(--text); margin-top: 10px; }
-
-        .toggle-detail-btn {
-            width: 100%;
-            background: var(--card);
-            border: 1px solid rgba(212,175,55,0.25);
-            border-radius: 12px;
-            padding: 11px 15px;
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; margin-bottom: 8px;
-            transition: border-color 0.2s;
-        }
-        .toggle-detail-btn:hover { border-color: var(--gold); }
-        .toggle-detail-btn .btn-label { font-size: 13px; font-weight: 600; color: var(--text); }
-        .toggle-detail-btn .btn-arrow {
-            font-size: 12px; color: var(--sub);
-            display: flex; align-items: center; gap: 4px;
-            transition: transform 0.25s;
-        }
-        .toggle-detail-btn.open .btn-arrow { transform: rotate(90deg); }
-
+        /* Show item */
         .show-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #444; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
@@ -102,6 +101,7 @@
         .show-list-wrap { display: none; }
         .show-list-wrap.open { display: block; }
 
+        /* Money */
         .money-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #34C759; box-shadow: 0 1px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         .money-item.waiting-pay { border-left-color: #FF3B30; }
         .money-item .iname { font-weight: bold; font-size: 14px; }
@@ -131,7 +131,7 @@
     <div class="summary-row">
         <div class="summary-tab active" id="tab-show-btn" onclick="switchTab('show')">
             <b id="countMonth">0</b>
-            <span>Tổng Show</span>
+            <span>Tổng Show Đã Làm </span>
         </div>
         <div class="summary-tab" id="tab-money-btn" onclick="switchTab('money')">
             <div class="money-tab-inner">
@@ -140,12 +140,12 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
             </div>
-            <span>Tổng Tiền</span>
+            <span>Tổng Tiền Đã Thu</span>
         </div>
     </div>
 
     <div class="filter-row">
-        <span class="filter-label">Tháng âm:</span>
+        <span class="filter-label">Tháng âm :</span>
         <select id="lunarMonthFilter" class="month-select" onchange="onMonthChange()">
             <option value="01">Tháng 1</option><option value="02">Tháng 2</option>
             <option value="03">Tháng 3</option><option value="04">Tháng 4</option>
@@ -159,26 +159,28 @@
     <!-- TAB SHOW -->
     <div class="tab-content active" id="tab-show">
 
-        <div id="addForm">
+        <!-- Nút toggle form thêm show -->
+        <button class="toggle-detail-btn add-btn" id="toggleAddBtn" onclick="toggleAddForm()">
+            <span class="btn-label">➕ Thêm Show Mới</span>
+            <span class="btn-arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
+        </button>
+
+        <!-- Form thêm show — ẩn mặc định -->
+        <div class="add-form-wrap" id="addFormWrap">
             <div class="main-card">
                 <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
                 <div class="field-wrap">
-                    <span class="field-label">📅 Ngày chạy show</span>
+                    <span class="field-label">📅 Ngày làm show</span>
                     <input type="date" id="sTime">
                 </div>
                 <div class="lunar-preview" id="lunarPreview"></div>
-                <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
+                <button class="btn-save" onclick="saveShow()">LƯU SHOW ĐÃ CHỌN</button>
             </div>
         </div>
 
-        <div id="oldMonthBanner" style="display:none;">
-            <div class="old-month-banner">
-                <div class="month-num" id="bannerMonthNum">—</div>
-                <div class="month-sub">Tháng âm lịch</div>
-                <div class="show-count" id="bannerShowCount">— show</div>
-            </div>
-        </div>
-
+        <!-- Nút Chi Tiết Show -->
         <button class="toggle-detail-btn" id="toggleDetailBtn" onclick="toggleShowList()">
             <span class="btn-label">Chi Tiết Show Trong Tháng</span>
             <span class="btn-arrow">
@@ -186,6 +188,7 @@
             </span>
         </button>
 
+        <!-- Danh sách show -->
         <div class="show-list-wrap" id="showListWrap">
             <div id="showList"></div>
         </div>
@@ -214,8 +217,8 @@
         let totalVisible = false;
         let realTotal = 0;
         let showListOpen = false;
+        let addFormOpen = false;
         let currentMonth = '';
-        let todayMonth = '';
 
         function maskMoney(amount) {
             const str = Math.round(amount).toString();
@@ -230,8 +233,8 @@
             const savedName   = localStorage.getItem('user_brand_name');
             if (savedAvatar) avatarDisplay.src = savedAvatar;
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
-            todayMonth = getLunarData(new Date().toISOString().slice(0,10)).month;
-            currentMonth = todayMonth;
+            // Lấy tháng âm hiện tại
+            currentMonth = getLunarData(new Date().toISOString().slice(0,10)).month;
             document.getElementById('lunarMonthFilter').value = currentMonth;
             render();
         });
@@ -257,12 +260,17 @@
             reader.readAsDataURL(file);
         });
 
+        // Toggle form thêm show
+        function toggleAddForm() {
+            addFormOpen = !addFormOpen;
+            document.getElementById('toggleAddBtn').classList.toggle('open', addFormOpen);
+            document.getElementById('addFormWrap').classList.toggle('open', addFormOpen);
+        }
+
         function toggleShowList() {
             showListOpen = !showListOpen;
-            const btn = document.getElementById('toggleDetailBtn');
-            const wrap = document.getElementById('showListWrap');
-            btn.classList.toggle('open', showListOpen);
-            wrap.classList.toggle('open', showListOpen);
+            document.getElementById('toggleDetailBtn').classList.toggle('open', showListOpen);
+            document.getElementById('showListWrap').classList.toggle('open', showListOpen);
         }
 
         function toggleMoneyVisibility(e) {
@@ -290,22 +298,57 @@
         function onMonthChange() {
             currentMonth = document.getElementById('lunarMonthFilter').value;
             showListOpen = false;
+            addFormOpen = false;
+            document.getElementById('toggleDetailBtn').classList.remove('open');
+            document.getElementById('showListWrap').classList.remove('open');
+            document.getElementById('toggleAddBtn').classList.remove('open');
+            document.getElementById('addFormWrap').classList.remove('open');
             render();
         }
 
+        // Tính âm lịch — dùng bảng tháng năm 2026 (Bính Ngọ)
+        // Mồng 1 tháng 1 âm lịch 2026 = 19/02/2026 dương lịch
         function getLunarData(str) {
             const d = new Date(str); d.setHours(0,0,0,0);
-            const start = new Date(2026, 1, 17);
-            const diffDays = Math.floor((d - start) / 86400000);
-            const monthLengths = [30,29,30,29,30,29,30,29,30,30,29,30];
-            const monthNames   = ["01","02","03","04","05","06","07","08","09","10","11","12"];
-            if (diffDays < 0) return { day:"??", month:"??" };
-            let daysLeft = diffDays;
-            for (let i = 0; i < monthLengths.length; i++) {
-                if (daysLeft < monthLengths[i]) return { day: String(daysLeft+1).padStart(2,'0'), month: monthNames[i] };
-                daysLeft -= monthLengths[i];
+            // Mồng 1 tháng 1 âm 2026 = 19/02/2026
+            const lunarMonths = [
+                { name: "01", start: new Date(2026,  1, 19), days: 30 }, // T1: 19/2 - 20/3
+                { name: "02", start: new Date(2026,  2, 21), days: 29 }, // T2: 21/3 - 18/4
+                { name: "03", start: new Date(2026,  3, 19), days: 30 }, // T3: 19/4 - 18/5
+                { name: "04", start: new Date(2026,  4, 19), days: 29 }, // T4: 19/5 - 16/6
+                { name: "05", start: new Date(2026,  5, 17), days: 30 }, // T5: 17/6 - 16/7
+                { name: "06", start: new Date(2026,  6, 17), days: 29 }, // T6: 17/7 - 14/8
+                { name: "07", start: new Date(2026,  7, 15), days: 30 }, // T7: 15/8 - 13/9
+                { name: "08", start: new Date(2026,  8, 14), days: 29 }, // T8: 14/9 - 12/10
+                { name: "09", start: new Date(2026,  9, 13), days: 30 }, // T9: 13/10 - 11/11
+                { name: "10", start: new Date(2026, 10, 12), days: 30 }, // T10: 12/11 - 11/12
+                { name: "11", start: new Date(2026, 11, 12), days: 29 }, // T11: 12/12 - 9/1/2027
+                { name: "12", start: new Date(2027,  0, 10), days: 30 }, // T12: 10/1 - 8/2/2027
+            ];
+
+            // Tháng 12 âm 2025 (trước T1/2026): mồng 1 = 21/01/2026
+            const prevMonths = [
+                { name: "12", start: new Date(2026, 0, 21), days: 29 }, // T12/2025: 21/1 - 18/2
+            ];
+
+            // Kiểm tra tháng 12 âm 2025 trước
+            for (const m of prevMonths) {
+                const end = new Date(m.start); end.setDate(end.getDate() + m.days);
+                if (d >= m.start && d < end) {
+                    const day = Math.floor((d - m.start) / 86400000) + 1;
+                    return { day: String(day).padStart(2,'0'), month: m.name };
+                }
             }
-            return { day:"??", month:"??" };
+
+            for (const m of lunarMonths) {
+                const end = new Date(m.start); end.setDate(end.getDate() + m.days);
+                if (d >= m.start && d < end) {
+                    const day = Math.floor((d - m.start) / 86400000) + 1;
+                    return { day: String(day).padStart(2,'0'), month: m.name };
+                }
+            }
+
+            return { day: "??", month: "??" };
         }
 
         document.getElementById('sTime').addEventListener('change', function() {
@@ -317,15 +360,21 @@
         });
 
         function saveShow() {
-            const title = document.getElementById('sTitle').value;
+            const title = document.getElementById('sTitle').value.trim();
             const time  = document.getElementById('sTime').value;
             if (!title || !time) return alert("Sếp điền đủ thông tin nhé!");
             const lunar = getLunarData(time);
-            shows.push({ id: Date.now(), title, time, status:'new', money:0, lunarDay:lunar.day, lunarMonth:lunar.month });
+            shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunarDay: lunar.day, lunarMonth: lunar.month });
             updateData();
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value  = '';
             document.getElementById('lunarPreview').classList.remove('show');
+            // Tự động chuyển sang tháng vừa thêm
+            currentMonth = lunar.month;
+            document.getElementById('lunarMonthFilter').value = currentMonth;
+            // Mở danh sách show sau khi thêm
+            showListOpen = true;
+            render();
         }
 
         function updateData() { localStorage.setItem(DB_NAME, JSON.stringify(shows)); render(); }
@@ -416,7 +465,6 @@
         }
 
         function render() {
-            const isCurrentMonth = currentMonth === todayMonth;
             const filtered = shows.filter(s => s.lunarMonth === currentMonth);
             filtered.sort((a,b) => new Date(a.time) - new Date(b.time));
 
@@ -429,17 +477,11 @@
                 ? 'Tổng thực thu: ' + realTotal.toLocaleString() + 'đ'
                 : 'Tổng thực thu: ' + maskMoney(realTotal);
 
-            document.getElementById('addForm').style.display = isCurrentMonth ? 'block' : 'none';
-            document.getElementById('oldMonthBanner').style.display = isCurrentMonth ? 'none' : 'block';
-            if (!isCurrentMonth) {
-                document.getElementById('bannerMonthNum').innerText = parseInt(currentMonth);
-                document.getElementById('bannerShowCount').innerText = count + ' show';
-            }
-
-            const btn = document.getElementById('toggleDetailBtn');
-            const wrap = document.getElementById('showListWrap');
-            btn.classList.toggle('open', showListOpen);
-            wrap.classList.toggle('open', showListOpen);
+            // Đồng bộ trạng thái nút
+            document.getElementById('toggleAddBtn').classList.toggle('open', addFormOpen);
+            document.getElementById('addFormWrap').classList.toggle('open', addFormOpen);
+            document.getElementById('toggleDetailBtn').classList.toggle('open', showListOpen);
+            document.getElementById('showListWrap').classList.toggle('open', showListOpen);
 
             document.getElementById('showList').innerHTML = filtered.length
                 ? filtered.map(showItemHTML).join('')
