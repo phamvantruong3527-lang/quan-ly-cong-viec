@@ -16,20 +16,44 @@
         #fileInput { display: none; }
         .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; width: 150px; }
 
-        .summary-card { background: var(--card); padding: 10px; border-radius: 15px; margin: 10px 0; border: 1px solid var(--gold); display: flex; justify-content: space-around; text-align: center; align-items: center; }
-        .summary-item b { color: var(--gold); font-size: 14px; display: block; }
-        .summary-item span { font-size: 8px; color: var(--sub); text-transform: uppercase; }
+        /* ===== SUMMARY: 2 tab riêng biệt ===== */
+        .summary-row { display: flex; gap: 10px; margin: 10px 0; }
+        .summary-tab {
+            flex: 1; background: var(--card); border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 14px; padding: 10px 8px; text-align: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .summary-tab.active { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
+        .summary-tab b { color: var(--gold); font-size: 18px; display: block; margin-bottom: 2px; }
+        .summary-tab span { font-size: 9px; color: var(--sub); text-transform: uppercase; }
+
+        /* Bộ lọc tháng */
+        .filter-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+        .filter-label { font-size: 11px; font-weight: bold; color: var(--sub); text-transform: uppercase; }
+        .month-select { background: var(--card); color: var(--gold); border: 1px solid var(--gold); padding: 5px 10px; border-radius: 10px; font-weight: bold; outline: none; font-size: 13px; }
+
+        /* ===== TAB CONTENT ===== */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Tiêu đề tab */
+        .tab-section-title { font-size: 13px; font-weight: bold; color: var(--sub); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
 
         .main-card { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
 
-        /* Tất cả input cùng 1 style, cùng kích thước */
-        input[type="text"], input[type="date"], select {
+        /* Input cùng size */
+        input[type="text"], input[type="date"] {
             width: 100%; max-width: 260px; padding: 10px; margin: 0 auto 10px auto; display: block;
             border-radius: 10px; border: 1px solid rgba(142,142,147,0.2);
-            background: var(--bg); color: var(--text); font-size: 14px;
-            text-align: center; outline: none;
-            /* Ép date cùng size, không tràn */
+            background: var(--bg); color: var(--text); font-size: 14px; text-align: center; outline: none;
             appearance: none; -webkit-appearance: none; min-width: 0; box-sizing: border-box;
+        }
+
+        /* Nhãn ngày chạy show */
+        .date-label {
+            font-size: 11px; color: var(--gold); font-weight: bold;
+            text-transform: uppercase; text-align: center;
+            display: block; margin-bottom: 4px; letter-spacing: 0.5px;
         }
 
         .lunar-preview { display: none; background: rgba(212,175,55,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 8px; margin: 0 auto 10px auto; max-width: 260px; font-size: 13px; color: var(--text); font-weight: bold; }
@@ -37,10 +61,10 @@
 
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; display: block; margin: 0 auto; }
 
+        /* Show item */
         .show-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #444; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
-
         .lunar-main { font-size: 14px; font-weight: bold; color: var(--gold); }
         .solar-sub { font-size: 10px; color: var(--sub); margin-left: 5px; }
 
@@ -49,9 +73,19 @@
         .btn-done { background: #34C759; }
         .btn-wait { background: #FF3B30; }
         .btn-edit { background: #5856D6; flex: none; width: 40px; }
-        .btn-del { background: #8E8E93; flex: none; width: 35px; }
-
+        .btn-del  { background: #8E8E93; flex: none; width: 35px; }
         .inline-edit-box { background: rgba(212,175,55,0.05); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
+
+        /* Money list */
+        .money-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #34C759; box-shadow: 0 1px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .money-item.waiting-pay { border-left-color: #FF3B30; }
+        .money-item .name { font-weight: bold; font-size: 14px; }
+        .money-item .amount { font-weight: bold; font-size: 14px; color: #34C759; }
+        .money-item .amount.pending { color: #FF3B30; }
+        .money-sub { font-size: 10px; color: var(--sub); margin-top: 3px; }
+
+        /* Tổng cộng */
+        .total-bar { background: rgba(212,175,55,0.12); border: 1px solid var(--gold); border-radius: 12px; padding: 12px; margin-top: 12px; text-align: center; font-weight: bold; color: var(--gold); font-size: 15px; }
     </style>
 </head>
 <body id="mainBody">
@@ -69,43 +103,62 @@
         <button onclick="toggleTheme()" style="background:none; border:none; font-size:18px;">🌓</button>
     </div>
 
-    <div class="summary-card">
-        <div class="summary-item"><b id="countMonth">0</b><span>Show</span></div>
-        <div class="summary-item">
-            <span style="font-size:7px; display:block;">LỌC THÁNG ÂM</span>
-            <!-- Đã XÓA tháng 6N, chỉ giữ 12 tháng bình thường -->
-            <select id="lunarMonthFilter" style="width:85px; margin:0; padding:2px; height:28px; font-size:12px;" onchange="render()">
-                <option value="01">Tháng 1</option>
-                <option value="02">Tháng 2</option>
-                <option value="03">Tháng 3</option>
-                <option value="04">Tháng 4</option>
-                <option value="05">Tháng 5</option>
-                <option value="06">Tháng 6</option>
-                <option value="07">Tháng 7</option>
-                <option value="08">Tháng 8</option>
-                <option value="09">Tháng 9</option>
-                <option value="10">Tháng 10</option>
-                <option value="11">Tháng 11</option>
-                <option value="12">Tháng 12</option>
-            </select>
+    <!-- ===== 2 TAB TỔNG KẾT ===== -->
+    <div class="summary-row">
+        <div class="summary-tab active" id="tab-show-btn" onclick="switchTab('show')">
+            <b id="countMonth">0</b>
+            <span>Tổng Show</span>
         </div>
-        <div class="summary-item"><b id="moneyMonth">0đ</b><span>Thu</span></div>
+        <div class="summary-tab" id="tab-money-btn" onclick="switchTab('money')">
+            <b id="moneyMonth">0đ</b>
+            <span>Tổng Tiền</span>
+        </div>
     </div>
 
-    <div class="main-card">
-        <!-- Tên show và ngày cùng style, không có block bao ngoài -->
-        <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
-        <input type="date" id="sTime" placeholder="Ngày chạy show">
-        <div class="lunar-preview" id="lunarPreview"></div>
-        <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
+    <!-- Bộ lọc tháng âm -->
+    <div class="filter-row">
+        <span class="filter-label">Tháng âm:</span>
+        <select id="lunarMonthFilter" class="month-select" onchange="render()">
+            <option value="01">Tháng 1</option>
+            <option value="02">Tháng 2</option>
+            <option value="03">Tháng 3</option>
+            <option value="04">Tháng 4</option>
+            <option value="05">Tháng 5</option>
+            <option value="06">Tháng 6</option>
+            <option value="07">Tháng 7</option>
+            <option value="08">Tháng 8</option>
+            <option value="09">Tháng 9</option>
+            <option value="10">Tháng 10</option>
+            <option value="11">Tháng 11</option>
+            <option value="12">Tháng 12</option>
+        </select>
     </div>
 
-    <div id="showList"></div>
+    <!-- ===== TAB 1: DANH SÁCH SHOW ===== -->
+    <div class="tab-content active" id="tab-show">
+        <div class="main-card">
+            <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
+            <!-- Nhãn ngày chạy show thay cho block bao ngoài -->
+            <span class="date-label">📅 Ngày chạy show</span>
+            <input type="date" id="sTime">
+            <div class="lunar-preview" id="lunarPreview"></div>
+            <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
+        </div>
+        <div id="showList"></div>
+    </div>
+
+    <!-- ===== TAB 2: DANH SÁCH TIỀN ===== -->
+    <div class="tab-content" id="tab-money">
+        <div class="tab-section-title">Chi tiết thu tiền tháng này</div>
+        <div id="moneyList"></div>
+        <div class="total-bar" id="totalBar">Tổng thực thu: 0đ</div>
+    </div>
 
     <script>
         const DB_NAME = 'duc_tu_event_final';
         let shows = JSON.parse(localStorage.getItem(DB_NAME)) || [];
         let editingId = null;
+        let activeTab = 'show';
 
         const avatarDisplay = document.getElementById('avatarDisplay');
         const brandNameInput = document.getElementById('brandName');
@@ -113,7 +166,7 @@
 
         window.addEventListener('load', () => {
             const savedAvatar = localStorage.getItem('user_avatar');
-            const savedName = localStorage.getItem('user_brand_name');
+            const savedName   = localStorage.getItem('user_brand_name');
             if (savedAvatar) avatarDisplay.src = savedAvatar;
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
             render();
@@ -142,17 +195,27 @@
             reader.readAsDataURL(file);
         });
 
+        // ===== SWITCH TAB =====
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('tab-show').classList.toggle('active', tab === 'show');
+            document.getElementById('tab-money').classList.toggle('active', tab === 'money');
+            document.getElementById('tab-show-btn').classList.toggle('active', tab === 'show');
+            document.getElementById('tab-money-btn').classList.toggle('active', tab === 'money');
+            render();
+        }
+
+        // ===== LỊCH ÂM =====
         function getLunarData(str) {
             const d = new Date(str); d.setHours(0,0,0,0);
             const start = new Date(2026, 1, 17);
             const diffDays = Math.floor((d - start) / 86400000);
-            // Đã bỏ tháng 6N khỏi mảng tính toán
             const monthLengths = [30, 29, 30, 29, 30, 29, 30, 29, 30, 30, 29, 30];
             const monthNames   = ["01","02","03","04","05","06","07","08","09","10","11","12"];
             if (diffDays < 0) return { day: "??", month: "??" };
             let daysLeft = diffDays;
             for (let i = 0; i < monthLengths.length; i++) {
-                if (daysLeft < monthLengths[i]) return { day: String(daysLeft + 1).padStart(2,'0'), month: monthNames[i] };
+                if (daysLeft < monthLengths[i]) return { day: String(daysLeft+1).padStart(2,'0'), month: monthNames[i] };
                 daysLeft -= monthLengths[i];
             }
             return { day: "??", month: "??" };
@@ -168,6 +231,7 @@
             preview.classList.add('show');
         });
 
+        // ===== LƯU SHOW =====
         function saveShow() {
             const title = document.getElementById('sTitle').value;
             const time  = document.getElementById('sTime').value;
@@ -206,19 +270,25 @@
             updateData();
         }
 
+        // ===== RENDER =====
         function render() {
-            const area = document.getElementById('showList');
             const selectedMonth = document.getElementById('lunarMonthFilter').value;
-            let total = 0, count = 0;
-            shows.sort((a,b) => new Date(a.time) - new Date(b.time));
+            const filtered = shows.filter(s => s.lunarMonth === selectedMonth);
+            filtered.sort((a,b) => new Date(a.time) - new Date(b.time));
 
-            area.innerHTML = shows.filter(s => s.lunarMonth === selectedMonth).map(s => {
-                count++; total += Number(s.money);
+            let totalMoney = 0, count = 0;
+            filtered.forEach(s => { count++; totalMoney += Number(s.money); });
+
+            document.getElementById('countMonth').innerText = count;
+            document.getElementById('moneyMonth').innerText = totalMoney.toLocaleString() + 'đ';
+
+            // --- TAB SHOW ---
+            document.getElementById('showList').innerHTML = filtered.map(s => {
                 const d = new Date(s.time);
-
                 if (editingId === s.id) {
                     return `<div class="inline-edit-box">
                         <input type="text" id="edit-t-${s.id}" value="${s.title}">
+                        <span class="date-label" style="margin-top:4px;">📅 Ngày chạy show</span>
                         <input type="date" id="edit-d-${s.id}" value="${s.time}">
                         <div style="display:flex; gap:5px;">
                             <button style="flex:1; padding:8px; background:var(--gold); color:white; border:none; border-radius:8px; font-size:10px; cursor:pointer;" onclick="saveInlineEdit(${s.id})">LƯU</button>
@@ -226,29 +296,46 @@
                         </div>
                     </div>`;
                 }
-
                 return `<div class="show-item ${s.status}">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div>
                             <div style="font-weight:bold; font-size:15px;">${s.title}</div>
                             <div style="margin-top:4px;">
-                                <span class="lunar-main">🌙 Âm: ${s.lunarDay}/${parseInt(s.lunarMonth)}</span>
+                                <span class="lunar-main">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)}</span>
                                 <span class="solar-sub">📅 ${d.getDate()}/${d.getMonth()+1}</span>
                             </div>
                         </div>
-                        ${s.status === 'paid' ? `<div style="color:#34C759; font-weight:bold; font-size:13px;">+${Number(s.money).toLocaleString()}</div>` : ''}
+                        ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${Number(s.money).toLocaleString()}</div>`:''}
                     </div>
                     <div class="actions">
-                        ${s.status !== 'paid' ? `<button class="btn-act btn-done" onclick="setStatus(${s.id},'done')">XONG</button>` : ''}
-                        ${s.status === 'new' ? `<button class="btn-act btn-wait" onclick="setStatus(${s.id},'wait')">CHỜ</button>` : ''}
+                        ${s.status!=='paid'?`<button class="btn-act btn-done" onclick="setStatus(${s.id},'done')">XONG</button>`:''}
+                        ${s.status==='new'?`<button class="btn-act btn-wait" onclick="setStatus(${s.id},'wait')">CHỜ</button>`:''}
                         <button class="btn-act btn-edit" onclick="startEdit(${s.id})">✏️</button>
                         <button class="btn-act btn-del" onclick="del(${s.id})">✕</button>
                     </div>
                 </div>`;
             }).join('');
 
-            document.getElementById('countMonth').innerText = count;
-            document.getElementById('moneyMonth').innerText = total.toLocaleString() + 'đ';
+            // --- TAB TIỀN ---
+            let tongThucThu = 0;
+            document.getElementById('moneyList').innerHTML = filtered.map(s => {
+                const d = new Date(s.time);
+                const dateStr = d.getDate() + '/' + (d.getMonth()+1);
+                if (s.status === 'paid') tongThucThu += Number(s.money);
+                return `<div class="money-item ${s.status !== 'paid' ? 'waiting-pay' : ''}">
+                    <div>
+                        <div class="name">${s.title}</div>
+                        <div class="money-sub">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)} &nbsp;|&nbsp; 📅 ${dateStr}</div>
+                    </div>
+                    <div>
+                        <div class="amount ${s.status !== 'paid' ? 'pending' : ''}">
+                            ${s.status === 'paid' ? '+' + Number(s.money).toLocaleString() + 'đ' : '🚩 Chưa thu'}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') || '<div style="text-align:center; color:var(--sub); padding:20px; font-size:13px;">Chưa có show nào tháng này</div>';
+
+            document.getElementById('totalBar').innerText = 'Tổng thực thu: ' + tongThucThu.toLocaleString() + 'đ';
         }
     </script>
 </body>
