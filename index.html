@@ -94,36 +94,10 @@
         .btn-money-edit { background: #FF9500; flex: none; padding: 8px 10px; }
         .inline-edit-box { background: rgba(212,175,55,0.05); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
 
-        .money-edit-box {
-            background: rgba(255,149,0,0.07);
-            border: 1px dashed #FF9500;
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 8px;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        .money-edit-box input[type="number"] {
-            flex: 1; padding: 8px 10px; border-radius: 8px;
-            border: 1px solid rgba(142,142,147,0.25);
-            background: var(--bg); color: var(--text);
-            font-size: 14px; font-weight: bold;
-            outline: none; margin: 0; display: block;
-            text-align: center; max-width: none;
-            appearance: none; -webkit-appearance: none;
-            box-sizing: border-box;
-        }
-        .money-edit-box .btn-save-money {
-            background: #FF9500; color: white; border: none;
-            border-radius: 8px; padding: 8px 12px;
-            font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;
-        }
-        .money-edit-box .btn-cancel-money {
-            background: #8E8E93; color: white; border: none;
-            border-radius: 8px; padding: 8px 10px;
-            font-size: 11px; font-weight: bold; cursor: pointer;
-        }
+        .money-edit-box { background: rgba(255,149,0,0.07); border: 1px dashed #FF9500; border-radius: 10px; padding: 10px; margin-top: 8px; display: flex; gap: 6px; align-items: center; }
+        .money-edit-box input[type="number"] { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(142,142,147,0.25); background: var(--bg); color: var(--text); font-size: 14px; font-weight: bold; outline: none; margin: 0; text-align: center; box-sizing: border-box; appearance: none; -webkit-appearance: none; }
+        .money-edit-box .btn-save-money { background: #FF9500; color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .money-edit-box .btn-cancel-money { background: #8E8E93; color: white; border: none; border-radius: 8px; padding: 8px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
         .show-list-wrap { display: none; }
         .show-list-wrap.open { display: block; }
@@ -182,7 +156,9 @@
         </select>
     </div>
 
+    <!-- TAB SHOW -->
     <div class="tab-content active" id="tab-show">
+
         <div id="addForm">
             <div class="main-card">
                 <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
@@ -213,8 +189,10 @@
         <div class="show-list-wrap" id="showListWrap">
             <div id="showList"></div>
         </div>
+
     </div>
 
+    <!-- TAB TIỀN -->
     <div class="tab-content" id="tab-money">
         <div class="tab-section-title">Chi tiết thu tiền tháng này</div>
         <div id="moneyList"></div>
@@ -431,3 +409,55 @@
                     ${s.status==='new'?`<button class="btn-act btn-wait" onclick="setStatus(${s.id},'wait')">CHỜ</button>`:''}
                     ${s.status==='paid'?`<button class="btn-act btn-money-edit" onclick="startEditMoney(${s.id})">💰 SỬA TIỀN</button>`:''}
                     <button class="btn-act btn-edit" onclick="startEdit(${s.id})">✏️</button>
+                    <button class="btn-act btn-del" onclick="del(${s.id})">✕</button>
+                </div>
+                ${moneyEditHTML}
+            </div>`;
+        }
+
+        function render() {
+            const isCurrentMonth = currentMonth === todayMonth;
+            const filtered = shows.filter(s => s.lunarMonth === currentMonth);
+            filtered.sort((a,b) => new Date(a.time) - new Date(b.time));
+
+            let count = 0; realTotal = 0;
+            filtered.forEach(s => { count++; realTotal += Number(s.money); });
+
+            document.getElementById('countMonth').innerText = count;
+            document.getElementById('moneyMonth').innerText = moneyVisible ? realTotal.toLocaleString()+'đ' : maskMoney(realTotal);
+            document.getElementById('totalBarText').innerText = totalVisible
+                ? 'Tổng thực thu: ' + realTotal.toLocaleString() + 'đ'
+                : 'Tổng thực thu: ' + maskMoney(realTotal);
+
+            document.getElementById('addForm').style.display = isCurrentMonth ? 'block' : 'none';
+            document.getElementById('oldMonthBanner').style.display = isCurrentMonth ? 'none' : 'block';
+            if (!isCurrentMonth) {
+                document.getElementById('bannerMonthNum').innerText = parseInt(currentMonth);
+                document.getElementById('bannerShowCount').innerText = count + ' show';
+            }
+
+            const btn = document.getElementById('toggleDetailBtn');
+            const wrap = document.getElementById('showListWrap');
+            btn.classList.toggle('open', showListOpen);
+            wrap.classList.toggle('open', showListOpen);
+
+            document.getElementById('showList').innerHTML = filtered.length
+                ? filtered.map(showItemHTML).join('')
+                : '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
+
+            document.getElementById('moneyList').innerHTML = filtered.map(s => {
+                const d = new Date(s.time);
+                return `<div class="money-item ${s.status!=='paid'?'waiting-pay':''}">
+                    <div>
+                        <div class="iname">${s.title}</div>
+                        <div class="money-sub">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)} &nbsp;|&nbsp; 📅 ${d.getDate()}/${d.getMonth()+1}</div>
+                    </div>
+                    <div class="amount ${s.status!=='paid'?'pending':''}">
+                        ${s.status==='paid'?'+'+Number(s.money).toLocaleString()+'đ':'🚩 Chưa thu'}
+                    </div>
+                </div>`;
+            }).join('') || '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
+        }
+    </script>
+</body>
+</html>
