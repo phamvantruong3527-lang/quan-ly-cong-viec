@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sự Kiện Đức Trường - Quản Lý Show V28 vip</title>
+    <title>Đức Tú Event - Quản Lý Lịch</title>
     <style>
         :root { --gold: #D4AF37; --bg: #F2F2F7; --card: #FFFFFF; --text: #1C1C1E; --sub: #8E8E93; }
         body.dark { --bg: #0A0A0A; --card: #1C1C1E; --text: #FFFFFF; --sub: #888; }
@@ -55,13 +55,11 @@
 
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; display: block; margin: 0 auto; }
 
-        /* Banner tháng cũ */
         .old-month-banner { background: var(--card); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 18px 15px; text-align: center; margin-bottom: 15px; }
         .old-month-banner .month-num { font-size: 42px; font-weight: bold; color: var(--gold); line-height: 1; }
         .old-month-banner .month-sub { font-size: 12px; color: var(--sub); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .old-month-banner .show-count { font-size: 15px; font-weight: bold; color: var(--text); margin-top: 10px; }
 
-        /* Nút Chi Tiết Show — dùng chung cho mọi tháng */
         .toggle-detail-btn {
             width: 100%;
             background: var(--card);
@@ -81,7 +79,6 @@
         }
         .toggle-detail-btn.open .btn-arrow { transform: rotate(90deg); }
 
-        /* Show item */
         .show-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #444; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
@@ -94,13 +91,43 @@
         .btn-wait { background: #FF3B30; }
         .btn-edit { background: #5856D6; flex: none; width: 40px; }
         .btn-del  { background: #8E8E93; flex: none; width: 35px; }
+        .btn-money-edit { background: #FF9500; flex: none; padding: 8px 10px; }
         .inline-edit-box { background: rgba(212,175,55,0.05); padding: 10px; border-radius: 10px; margin-top: 5px; border: 1px dashed var(--gold); }
 
-        /* Show list wrapper ẩn/hiện */
+        .money-edit-box {
+            background: rgba(255,149,0,0.07);
+            border: 1px dashed #FF9500;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .money-edit-box input[type="number"] {
+            flex: 1; padding: 8px 10px; border-radius: 8px;
+            border: 1px solid rgba(142,142,147,0.25);
+            background: var(--bg); color: var(--text);
+            font-size: 14px; font-weight: bold;
+            outline: none; margin: 0; display: block;
+            text-align: center; max-width: none;
+            appearance: none; -webkit-appearance: none;
+            box-sizing: border-box;
+        }
+        .money-edit-box .btn-save-money {
+            background: #FF9500; color: white; border: none;
+            border-radius: 8px; padding: 8px 12px;
+            font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;
+        }
+        .money-edit-box .btn-cancel-money {
+            background: #8E8E93; color: white; border: none;
+            border-radius: 8px; padding: 8px 10px;
+            font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+
         .show-list-wrap { display: none; }
         .show-list-wrap.open { display: block; }
 
-        /* Money */
         .money-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #34C759; box-shadow: 0 1px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
         .money-item.waiting-pay { border-left-color: #FF3B30; }
         .money-item .iname { font-weight: bold; font-size: 14px; }
@@ -155,23 +182,19 @@
         </select>
     </div>
 
-    <!-- TAB SHOW -->
     <div class="tab-content active" id="tab-show">
-
-        <!-- Form nhập (chỉ hiện tháng hiện tại) -->
         <div id="addForm">
             <div class="main-card">
                 <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
                 <div class="field-wrap">
-                    <span class="field-label">📅 Chọn ngày làm show</span>
+                    <span class="field-label">📅 Ngày chạy show</span>
                     <input type="date" id="sTime">
                 </div>
                 <div class="lunar-preview" id="lunarPreview"></div>
-                <button class="btn-save" onclick="saveShow()">LƯU NGÀY LÀM SHOW</button>
+                <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
             </div>
         </div>
 
-        <!-- Banner tháng cũ -->
         <div id="oldMonthBanner" style="display:none;">
             <div class="old-month-banner">
                 <div class="month-num" id="bannerMonthNum">—</div>
@@ -180,7 +203,6 @@
             </div>
         </div>
 
-        <!-- Nút Chi Tiết Show — hiện ở MỌI tháng -->
         <button class="toggle-detail-btn" id="toggleDetailBtn" onclick="toggleShowList()">
             <span class="btn-label">Chi Tiết Show Trong Tháng</span>
             <span class="btn-arrow">
@@ -188,14 +210,11 @@
             </span>
         </button>
 
-        <!-- Danh sách show — ẩn/hiện bằng nút trên -->
         <div class="show-list-wrap" id="showListWrap">
             <div id="showList"></div>
         </div>
-
     </div>
 
-    <!-- TAB TIỀN -->
     <div class="tab-content" id="tab-money">
         <div class="tab-section-title">Chi tiết thu tiền tháng này</div>
         <div id="moneyList"></div>
@@ -211,11 +230,12 @@
         const DB_NAME = 'duc_tu_event_final';
         let shows = JSON.parse(localStorage.getItem(DB_NAME)) || [];
         let editingId = null;
+        let editingMoneyId = null;
         let activeTab = 'show';
         let moneyVisible = false;
         let totalVisible = false;
         let realTotal = 0;
-        let showListOpen = false; // Mặc định ẩn show, bấm nút mới hiện
+        let showListOpen = false;
         let currentMonth = '';
         let todayMonth = '';
 
@@ -259,7 +279,6 @@
             reader.readAsDataURL(file);
         });
 
-        // ===== ẨN / HIỆN SHOW LIST =====
         function toggleShowList() {
             showListOpen = !showListOpen;
             const btn = document.getElementById('toggleDetailBtn');
@@ -292,7 +311,7 @@
 
         function onMonthChange() {
             currentMonth = document.getElementById('lunarMonthFilter').value;
-            showListOpen = false; // reset ẩn khi đổi tháng
+            showListOpen = false;
             render();
         }
 
@@ -333,9 +352,25 @@
 
         function updateData() { localStorage.setItem(DB_NAME, JSON.stringify(shows)); render(); }
         function toggleTheme() { document.getElementById('mainBody').classList.toggle('dark'); }
-        function startEdit(id) { editingId = id; render(); }
+        function startEdit(id) { editingId = id; editingMoneyId = null; render(); }
         function cancelEdit() { editingId = null; render(); }
         function del(id) { if(confirm("Xóa lịch này nhé sếp?")) { shows = shows.filter(x => x.id !== id); updateData(); } }
+
+        function startEditMoney(id) {
+            editingMoneyId = (editingMoneyId === id) ? null : id;
+            editingId = null;
+            render();
+        }
+
+        function saveEditedMoney(id) {
+            const input = document.getElementById(`money-input-${id}`);
+            const val = input ? Number(input.value) : null;
+            if (val === null || isNaN(val) || val < 0) return alert("Sếp nhập số tiền hợp lệ nhé!");
+            const idx = shows.findIndex(x => x.id === id);
+            if (idx > -1) { shows[idx].money = val; }
+            editingMoneyId = null;
+            updateData();
+        }
 
         function saveInlineEdit(id) {
             const newTitle = document.getElementById(`edit-t-${id}`).value;
@@ -372,6 +407,14 @@
                     </div>
                 </div>`;
             }
+
+            const moneyEditHTML = editingMoneyId === s.id ? `
+                <div class="money-edit-box">
+                    <input type="number" id="money-input-${s.id}" value="${s.money}" placeholder="Nhập số tiền..." min="0">
+                    <button class="btn-save-money" onclick="saveEditedMoney(${s.id})">LƯU</button>
+                    <button class="btn-cancel-money" onclick="startEditMoney(${s.id})">✕</button>
+                </div>` : '';
+
             return `<div class="show-item ${s.status}">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
@@ -386,61 +429,5 @@
                 <div class="actions">
                     ${s.status!=='paid'?`<button class="btn-act btn-done" onclick="setStatus(${s.id},'done')">XONG</button>`:''}
                     ${s.status==='new'?`<button class="btn-act btn-wait" onclick="setStatus(${s.id},'wait')">CHỜ</button>`:''}
+                    ${s.status==='paid'?`<button class="btn-act btn-money-edit" onclick="startEditMoney(${s.id})">💰 SỬA TIỀN</button>`:''}
                     <button class="btn-act btn-edit" onclick="startEdit(${s.id})">✏️</button>
-                    <button class="btn-act btn-del" onclick="del(${s.id})">✕</button>
-                </div>
-            </div>`;
-        }
-
-        function render() {
-            const isCurrentMonth = currentMonth === todayMonth;
-            const filtered = shows.filter(s => s.lunarMonth === currentMonth);
-            filtered.sort((a,b) => new Date(a.time) - new Date(b.time));
-
-            let count = 0; realTotal = 0;
-            filtered.forEach(s => { count++; realTotal += Number(s.money); });
-
-            document.getElementById('countMonth').innerText = count;
-            document.getElementById('moneyMonth').innerText = moneyVisible ? realTotal.toLocaleString()+'đ' : maskMoney(realTotal);
-            document.getElementById('totalBarText').innerText = totalVisible
-                ? 'Tổng thực thu: ' + realTotal.toLocaleString() + 'đ'
-                : 'Tổng thực thu: ' + maskMoney(realTotal);
-
-            // Form nhập chỉ tháng hiện tại
-            document.getElementById('addForm').style.display = isCurrentMonth ? 'block' : 'none';
-
-            // Banner tháng cũ
-            document.getElementById('oldMonthBanner').style.display = isCurrentMonth ? 'none' : 'block';
-            if (!isCurrentMonth) {
-                document.getElementById('bannerMonthNum').innerText = parseInt(currentMonth);
-                document.getElementById('bannerShowCount').innerText = count + ' show';
-            }
-
-            // Nút Chi Tiết — đồng bộ trạng thái open
-            const btn = document.getElementById('toggleDetailBtn');
-            const wrap = document.getElementById('showListWrap');
-            btn.classList.toggle('open', showListOpen);
-            wrap.classList.toggle('open', showListOpen);
-
-            // Nội dung danh sách
-            document.getElementById('showList').innerHTML = filtered.length
-                ? filtered.map(showItemHTML).join('')
-                : '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
-
-            // Tab tiền
-            document.getElementById('moneyList').innerHTML = filtered.map(s => {
-                const d = new Date(s.time);
-                return `<div class="money-item ${s.status!=='paid'?'waiting-pay':''}">
-                    <div>
-                        <div class="iname">${s.title}</div>
-                        <div class="money-sub">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)} &nbsp;|&nbsp; 📅 ${d.getDate()}/${d.getMonth()+1}</div>
-                    </div>
-                    <div class="amount ${s.status!=='paid'?'pending':''}">
-                        ${s.status==='paid'?'+'+Number(s.money).toLocaleString()+'đ':'🚩 Chưa thu'}
-                    </div>
-                </div>`;
-            }).join('') || '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
-        }
-    </script>
-</body>
-</html>
