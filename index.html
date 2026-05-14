@@ -70,6 +70,20 @@
         .field-label { font-size: 10px; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 0.6px; padding: 5px 10px 0 10px; display: block; text-align: center; }
         .field-wrap input[type="date"] { border: none; margin: 0; padding: 6px 10px 8px 10px; max-width: 100%; width: 100%; background: transparent; text-align: center; }
 
+        /* Ngày 2 toggle */
+        .date2-toggle-wrap { width: 100%; max-width: 260px; margin: 0 auto 10px auto; }
+        .date2-toggle-btn {
+            width: 100%; background: transparent;
+            border: 1px dashed rgba(212,175,55,0.5);
+            border-radius: 10px; padding: 8px 12px;
+            color: var(--gold); font-size: 12px; font-weight: bold;
+            cursor: pointer; text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .date2-toggle-btn:hover { background: rgba(212,175,55,0.08); }
+        .date2-block { display: none; margin-top: 8px; }
+        .date2-block.show { display: block; }
+
         .lunar-preview { display: none; background: rgba(212,175,55,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 8px; margin: 0 auto 10px auto; max-width: 260px; font-size: 13px; color: var(--text); font-weight: bold; text-align: center; }
         .lunar-preview.show { display: block; }
 
@@ -80,6 +94,14 @@
         .show-item.waiting { border-left-color: #FF3B30; }
         .lunar-main { font-size: 14px; font-weight: bold; color: var(--gold); }
         .solar-sub { font-size: 10px; color: var(--sub); margin-left: 5px; }
+
+        /* Badge ngày 2 */
+        .date2-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.35);
+            border-radius: 6px; padding: 2px 7px; margin-top: 5px;
+            font-size: 11px; color: var(--gold); font-weight: bold;
+        }
 
         .actions { margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap; }
         .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; min-width: 45px; }
@@ -162,11 +184,27 @@
         <div class="add-form-wrap" id="addFormWrap">
             <div class="main-card">
                 <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
+
                 <div class="field-wrap">
-                    <span class="field-label">📅 Ngày chạy show</span>
+                    <span class="field-label">📅 Ngày 1 – Ngày chạy show</span>
                     <input type="date" id="sTime">
                 </div>
                 <div class="lunar-preview" id="lunarPreview"></div>
+
+                <!-- Nút bật ngày 2 -->
+                <div class="date2-toggle-wrap">
+                    <button class="date2-toggle-btn" id="date2ToggleBtn" onclick="toggleDate2Form()">
+                        ➕ Thêm ngày thứ 2 (tùy chọn)
+                    </button>
+                    <div class="date2-block" id="date2Block">
+                        <div class="field-wrap" style="margin-top:0;">
+                            <span class="field-label">📅 Ngày 2 – Ngày setup / dự phòng</span>
+                            <input type="date" id="sTime2">
+                        </div>
+                        <div class="lunar-preview" id="lunarPreview2"></div>
+                    </div>
+                </div>
+
                 <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
             </div>
         </div>
@@ -205,6 +243,7 @@
         let realTotal = 0;
         let showListOpen = false;
         let addFormOpen = false;
+        let date2FormOpen = false;
         let currentMonth = '';
 
         function maskMoney(amount) {
@@ -215,14 +254,38 @@
         const avatarDisplay = document.getElementById('avatarDisplay');
         const brandNameInput = document.getElementById('brandName');
 
+        function getTodayLunarMonth() {
+            // Lấy ngày hôm nay theo múi giờ địa phương (tránh lệch UTC)
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            return getLunarData(`${yyyy}-${mm}-${dd}`).month;
+        }
+
+        function syncCurrentMonth() {
+            const todayLunarMonth = getTodayLunarMonth();
+            if (todayLunarMonth !== '??' && todayLunarMonth !== currentMonth) {
+                currentMonth = todayLunarMonth;
+                document.getElementById('lunarMonthFilter').value = currentMonth;
+                showListOpen = false;
+                addFormOpen = false;
+                date2FormOpen = false;
+                render();
+            }
+        }
+
         window.addEventListener('load', () => {
             const savedAvatar = localStorage.getItem('user_avatar');
             const savedName   = localStorage.getItem('user_brand_name');
             if (savedAvatar) avatarDisplay.src = savedAvatar;
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
-            currentMonth = getLunarData(new Date().toISOString().slice(0,10)).month;
+            currentMonth = getTodayLunarMonth();
             document.getElementById('lunarMonthFilter').value = currentMonth;
             render();
+
+            // Kiểm tra mỗi phút — nếu sang ngày/tháng mới thì tự nhảy tháng âm
+            setInterval(syncCurrentMonth, 60 * 1000);
         });
 
         brandNameInput.addEventListener('input', () => localStorage.setItem('user_brand_name', brandNameInput.value));
@@ -248,7 +311,22 @@
 
         function toggleAddForm() {
             addFormOpen = !addFormOpen;
+            if (!addFormOpen) { date2FormOpen = false; }
             render();
+        }
+
+        function toggleDate2Form() {
+            date2FormOpen = !date2FormOpen;
+            const block = document.getElementById('date2Block');
+            const btn = document.getElementById('date2ToggleBtn');
+            if (block) block.classList.toggle('show', date2FormOpen);
+            if (btn) btn.textContent = date2FormOpen ? '✕ Bỏ ngày thứ 2' : '➕ Thêm ngày thứ 2 (tùy chọn)';
+            if (!date2FormOpen) {
+                const inp = document.getElementById('sTime2');
+                if (inp) inp.value = '';
+                const prev = document.getElementById('lunarPreview2');
+                if (prev) prev.classList.remove('show');
+            }
         }
 
         function toggleShowList() {
@@ -279,6 +357,7 @@
             currentMonth = document.getElementById('lunarMonthFilter').value;
             showListOpen = false;
             addFormOpen = false;
+            date2FormOpen = false;
             render();
         }
 
@@ -325,16 +404,45 @@
             preview.classList.add('show');
         });
 
+        document.getElementById('sTime2').addEventListener('change', function() {
+            const preview = document.getElementById('lunarPreview2');
+            if (!this.value) { preview.classList.remove('show'); return; }
+            const lunar = getLunarData(this.value);
+            preview.innerHTML = `🌙 Âm lịch: Ngày ${lunar.day} tháng ${parseInt(lunar.month)}`;
+            preview.classList.add('show');
+        });
+
         function saveShow() {
             const title = document.getElementById('sTitle').value.trim();
             const time  = document.getElementById('sTime').value;
+            const time2 = document.getElementById('sTime2').value;
             if (!title || !time) return alert("Sếp điền đủ thông tin nhé!");
+
             const lunar = getLunarData(time);
-            shows.push({ id: Date.now(), title, time, status: 'new', money: 0, lunarDay: lunar.day, lunarMonth: lunar.month });
+            const newShow = {
+                id: Date.now(),
+                title, time,
+                status: 'new', money: 0,
+                lunarDay: lunar.day, lunarMonth: lunar.month
+            };
+
+            // Ngày 2 (tùy chọn)
+            if (date2FormOpen && time2) {
+                const lunar2 = getLunarData(time2);
+                newShow.time2 = time2;
+                newShow.lunarDay2 = lunar2.day;
+                newShow.lunarMonth2 = lunar2.month;
+            }
+
+            shows.push(newShow);
             updateData();
+
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value  = '';
+            document.getElementById('sTime2').value = '';
             document.getElementById('lunarPreview').classList.remove('show');
+            document.getElementById('lunarPreview2').classList.remove('show');
+            date2FormOpen = false;
             currentMonth = lunar.month;
             document.getElementById('lunarMonthFilter').value = currentMonth;
             showListOpen = true;
@@ -366,11 +474,25 @@
         function saveInlineEdit(id) {
             const newTitle = document.getElementById(`edit-t-${id}`).value;
             const newTime  = document.getElementById(`edit-d-${id}`).value;
+            const newTime2 = document.getElementById(`edit-d2-${id}`).value;
             if (!newTitle || !newTime) return;
             const lunar = getLunarData(newTime);
             const idx = shows.findIndex(x => x.id === id);
-            shows[idx].title = newTitle; shows[idx].time = newTime;
-            shows[idx].lunarDay = lunar.day; shows[idx].lunarMonth = lunar.month;
+            shows[idx].title = newTitle;
+            shows[idx].time = newTime;
+            shows[idx].lunarDay = lunar.day;
+            shows[idx].lunarMonth = lunar.month;
+
+            if (newTime2) {
+                const lunar2 = getLunarData(newTime2);
+                shows[idx].time2 = newTime2;
+                shows[idx].lunarDay2 = lunar2.day;
+                shows[idx].lunarMonth2 = lunar2.month;
+            } else {
+                delete shows[idx].time2;
+                delete shows[idx].lunarDay2;
+                delete shows[idx].lunarMonth2;
+            }
             editingId = null; updateData();
         }
 
@@ -398,12 +520,17 @@
 
         function showItemHTML(s) {
             const d = new Date(s.time);
+
             if (editingId === s.id) {
                 return `<div class="inline-edit-box" style="background:rgba(212,175,55,0.05); padding:10px; border-radius:10px; margin-top:5px; border:1px dashed var(--gold);">
                     <input type="text" id="edit-t-${s.id}" value="${s.title}">
                     <div class="field-wrap" style="margin:0 auto 10px auto;">
-                        <span class="field-label">📅 Ngày chạy show</span>
+                        <span class="field-label">📅 Ngày 1 – Ngày chạy show</span>
                         <input type="date" id="edit-d-${s.id}" value="${s.time}">
+                    </div>
+                    <div class="field-wrap" style="margin:0 auto 10px auto;">
+                        <span class="field-label">📅 Ngày 2 – Setup / Dự phòng (tùy chọn)</span>
+                        <input type="date" id="edit-d2-${s.id}" value="${s.time2 || ''}">
                     </div>
                     <div style="display:flex;gap:5px;">
                         <button style="flex:1;padding:8px;background:var(--gold);color:white;border:none;border-radius:8px;font-size:10px;cursor:pointer;" onclick="saveInlineEdit(${s.id})">LƯU</button>
@@ -419,6 +546,14 @@
                     <button class="btn-cancel-money" onclick="startEditMoney(${s.id})">✕</button>
                 </div>` : '';
 
+            // Hiển thị ngày 2 nếu có
+            const date2HTML = s.time2 ? (() => {
+                const d2 = new Date(s.time2);
+                return `<div class="date2-badge">
+                    📅 Ngày 2: 🌙 ${s.lunarDay2}/${parseInt(s.lunarMonth2)} &nbsp;·&nbsp; ${d2.getDate()}/${d2.getMonth()+1}
+                </div>`;
+            })() : '';
+
             return `<div class="show-item ${s.status}">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
@@ -427,18 +562,17 @@
                             <span class="lunar-main">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)}</span>
                             <span class="solar-sub">📅 ${d.getDate()}/${d.getMonth()+1}</span>
                         </div>
+                        ${date2HTML}
                     </div>
                     ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${Number(s.money).toLocaleString()}</div>`:''}
                 </div>
                 <div class="actions">
                     ${s.status!=='paid'?`<button class="btn-act btn-done" onclick="setStatus(${s.id},'done')">XONG</button>`:''}
                     ${s.status==='new'?`<button class="btn-act btn-wait" onclick="setStatus(${s.id},'wait')">CHỜ</button>`:''}
-                    
                     ${s.status==='paid'? `
                         <button class="btn-act btn-money-edit" onclick="startEditMoney(${s.id})">💰 SỬA TIỀN</button>
                         <button class="btn-act btn-undo" onclick="setStatus(${s.id},'reset')" title="Hoàn tác">↩️ QUAY LẠI</button>
                     ` : ''}
-                    
                     <button class="btn-act btn-edit" onclick="startEdit(${s.id})">✏️</button>
                     <button class="btn-act btn-del" onclick="del(${s.id})">✕</button>
                 </div>
@@ -464,16 +598,26 @@
             document.getElementById('toggleDetailBtn').classList.toggle('open', showListOpen);
             document.getElementById('showListWrap').classList.toggle('open', showListOpen);
 
+            // Đồng bộ trạng thái nút ngày 2
+            const block = document.getElementById('date2Block');
+            const btn2 = document.getElementById('date2ToggleBtn');
+            if (block) block.classList.toggle('show', date2FormOpen);
+            if (btn2) btn2.textContent = date2FormOpen ? '✕ Bỏ ngày thứ 2' : '➕ Thêm ngày thứ 2 (tùy chọn)';
+
             document.getElementById('showList').innerHTML = filtered.length
                 ? filtered.map(showItemHTML).join('')
                 : '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
 
             document.getElementById('moneyList').innerHTML = filtered.map(s => {
                 const d = new Date(s.time);
+                const d2Info = s.time2 ? (() => {
+                    const d2 = new Date(s.time2);
+                    return ` &nbsp;·&nbsp; 📅 Ngày 2: ${d2.getDate()}/${d2.getMonth()+1}`;
+                })() : '';
                 return `<div class="money-item ${s.status!=='paid'?'waiting-pay':''}">
                     <div>
                         <div class="iname">${s.title}</div>
-                        <div class="money-sub">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)} &nbsp;|&nbsp; 📅 ${d.getDate()}/${d.getMonth()+1}</div>
+                        <div class="money-sub">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)} &nbsp;|&nbsp; 📅 ${d.getDate()}/${d.getMonth()+1}${d2Info}</div>
                     </div>
                     <div class="amount ${s.status!=='paid'?'pending':''}">
                         ${s.status==='paid'?'+'+Number(s.money).toLocaleString()+'đ':'🚩 Chưa thu'}
