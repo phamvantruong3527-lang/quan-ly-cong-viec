@@ -266,15 +266,19 @@
             }
         }
 
+        // ĐÃ CHỈNH SỬA: Ép hệ thống chuyển sang tháng mới sớm hơn 2 ngày theo yêu cầu của sếp
         function getTodayLunarMonth() {
             const now = new Date();
+            
+            // Cộng thêm 2 ngày vào thời gian thực để nhảy thẳng sang tháng 4 âm lịch từ hôm nay
+            now.setDate(now.getDate() + 2); 
+
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             return getLunarData(`${yyyy}-${mm}-${dd}`).month;
         }
 
-        // TỰ ĐỘNG KHÓA VÀ CẬP NHẬT THEO THỜI GIAN THỰC
         function enforceCurrentMonth() {
             const todayLunarMonth = getTodayLunarMonth();
             if (todayLunarMonth !== '??' && todayLunarMonth !== currentMonth) {
@@ -293,7 +297,6 @@
             currentMonth = getTodayLunarMonth();
             render();
 
-            // Cứ 60 giây chạy ngầm kiểm tra lịch để tự động đồng bộ
             setInterval(enforceCurrentMonth, 60 * 1000);
         });
 
@@ -351,7 +354,6 @@
             document.getElementById('sTime').value  = '';
             document.getElementById('lunarSubHint').innerText = 'Chưa chọn ngày';
             
-            // Re-sync lại tháng thực tế sau khi thêm
             currentMonth = getTodayLunarMonth(); 
             showListOpen = true;
             addFormOpen = false;
@@ -469,7 +471,6 @@
         }
 
         function render() {
-            // Cập nhật nhãn thông báo tháng âm lịch hiện tại trên thanh bar
             const displayMonthText = currentMonth ? parseInt(currentMonth) : '--';
             document.getElementById('currentLunarMonthLabel').innerText = `ĐANG HIỂN THỊ: THÁNG ${displayMonthText} LỊCH ÂM`;
 
