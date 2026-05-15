@@ -221,7 +221,6 @@
             if (!dateString) return { day: "??", month: "??" };
             
             const parts = dateString.split('-');
-            // Thiết lập cứng ngày giờ theo UTC để không bị lệch múi giờ trên các thiết bị mobile
             const d = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0));
             
             const lunarMonths = [
@@ -230,7 +229,7 @@
                 { name: "01", start: new Date(Date.UTC(2026, 1, 17)), days: 30 },  // Mùng 1 Tết Bính Ngọ (17/02 Dương)
                 { name: "02", start: new Date(Date.UTC(2026, 2, 19)), days: 29 },  // Mùng 1 tháng 2 Âm (19/03 Dương)
                 { name: "03", start: new Date(Date.UTC(2026, 3, 17)), days: 30 },  // Mùng 1 tháng 3 Âm (17/04 Dương)
-                { name: "04", start: new Date(Date.UTC(2026, 4, 17)), days: 29 },  // ĐÃ SỬA: Mùng 1 tháng 4 Âm là ngày 17/05 Dương
+                { name: "04", start: new Date(Date.UTC(2026, 4, 17)), days: 29 },  // Mùng 1 tháng 4 Âm (17/05 Dương)
                 { name: "05", start: new Date(Date.UTC(2026, 5, 15)), days: 30 },  
                 { name: "06", start: new Date(Date.UTC(2026, 6, 14)), days: 29 },  
                 { name: "07", start: new Date(Date.UTC(2026, 7, 13)), days: 30 },  
@@ -260,7 +259,6 @@
             label.innerText = `🌙 Âm lịch: Ngày ${parseInt(lunar.day)} tháng ${parseInt(lunar.month)}`;
         }
 
-        // ÉP CẬP NHẬT: Tự động chuẩn hóa lại toàn bộ lịch show cũ sếp đã lưu sang bảng tra cứu mới
         function fixAndNormalizeOldData() {
             let hasChanges = false;
             shows.forEach(s => {
@@ -287,14 +285,19 @@
             return getLunarData(`${yyyy}-${mm}-${dd}`).month;
         }
 
+        // ĐÃ SỬA: Chỉ đồng bộ ngầm khi sếp ĐANG xem đúng tháng âm lịch hiện tại của thực tế
         function syncCurrentMonth() {
             const todayLunarMonth = getTodayLunarMonth();
             if (todayLunarMonth !== '??' && todayLunarMonth !== currentMonth) {
-                currentMonth = todayLunarMonth;
-                document.getElementById('lunarMonthFilter').value = currentMonth;
-                showListOpen = false;
-                addFormOpen = false;
-                render();
+                // Kiểm tra xem bộ lọc select trên màn hình có đang trùng với tháng thực tế trước đó không
+                const filterSelect = document.getElementById('lunarMonthFilter');
+                if (filterSelect.value === currentMonth) {
+                    currentMonth = todayLunarMonth;
+                    filterSelect.value = currentMonth;
+                    showListOpen = false;
+                    addFormOpen = false;
+                    render();
+                }
             }
         }
 
@@ -304,6 +307,8 @@
             const savedName   = localStorage.getItem('user_brand_name');
             if (savedAvatar) avatarDisplay.src = savedAvatar;
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
+            
+            // Luôn nhận chính xác tháng âm lịch hiện tại khi vừa mở ứng dụng lên
             currentMonth = getTodayLunarMonth();
             document.getElementById('lunarMonthFilter').value = currentMonth;
             render();
