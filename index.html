@@ -14,7 +14,10 @@
         .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold); overflow: hidden; cursor: pointer; background: #eee; flex-shrink: 0; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         #fileInput { display: none; }
-        .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; width: 150px; }
+        .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; width: 130px; }
+
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .month-select { background: var(--card); color: var(--gold); border: 1px solid var(--gold); padding: 5px 8px; border-radius: 8px; font-weight: bold; outline: none; font-size: 12px; }
 
         .summary-row { display: flex; gap: 10px; margin: 10px 0; }
         .summary-tab { flex: 1; background: var(--card); border: 1px solid rgba(212,175,55,0.3); border-radius: 14px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
@@ -118,7 +121,17 @@
             <input type="file" id="fileInput" accept="image/*">
             <input class="editable-name" id="brandName" type="text" placeholder="Tên thương hiệu...">
         </div>
-        <button onclick="toggleTheme()" style="background:none; border:none; font-size:18px;">🌓</button>
+        <div class="header-right">
+            <select id="lunarMonthFilter" class="month-select" onchange="onMonthChange()">
+                <option value="01">Tháng 1</option><option value="02">Tháng 2</option>
+                <option value="03">Tháng 3</option><option value="04">Tháng 4</option>
+                <option value="05">Tháng 5</option><option value="06">Tháng 6</option>
+                <option value="07">Tháng 7</option><option value="08">Tháng 8</option>
+                <option value="09">Tháng 9</option><option value="10">Tháng 10</option>
+                <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+            </select>
+            <button onclick="toggleTheme()" style="background:none; border:none; font-size:18px; padding:0; cursor:pointer;">🌓</button>
+        </div>
     </div>
 
     <div class="summary-row">
@@ -266,24 +279,27 @@
             }
         }
 
-        // ĐÃ CHỈNH SỬA: Ép hệ thống chuyển sang tháng mới sớm hơn 2 ngày theo yêu cầu của sếp
         function getTodayLunarMonth() {
             const now = new Date();
-            
-            // Cộng thêm 2 ngày vào thời gian thực để nhảy thẳng sang tháng 4 âm lịch từ hôm nay
-            now.setDate(now.getDate() + 2); 
-
+            now.setDate(now.getDate() + 2); // Giữ logic cộng sớm 2 ngày để ép hiển thị tháng 4 âm luôn
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             return getLunarData(`${yyyy}-${mm}-${dd}`).month;
         }
 
-        function enforceCurrentMonth() {
+        // Đồng bộ ngầm thông minh: Chỉ chạy nếu sếp đang lọc đúng tiến trình tháng thực tế
+        function syncCurrentMonth() {
             const todayLunarMonth = getTodayLunarMonth();
             if (todayLunarMonth !== '??' && todayLunarMonth !== currentMonth) {
-                currentMonth = todayLunarMonth;
-                render();
+                const filterSelect = document.getElementById('lunarMonthFilter');
+                if (filterSelect.value === currentMonth) {
+                    currentMonth = todayLunarMonth;
+                    filterSelect.value = currentMonth;
+                    showListOpen = false;
+                    addFormOpen = false;
+                    render();
+                }
             }
         }
 
@@ -295,9 +311,10 @@
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
             
             currentMonth = getTodayLunarMonth();
+            document.getElementById('lunarMonthFilter').value = currentMonth;
             render();
 
-            setInterval(enforceCurrentMonth, 60 * 1000);
+            setInterval(syncCurrentMonth, 60 * 1000);
         });
 
         brandNameInput.addEventListener('input', () => localStorage.setItem('user_brand_name', brandNameInput.value));
@@ -334,6 +351,14 @@
             document.getElementById('tab-money-btn').classList.toggle('active', tab === 'money');
         }
 
+        // Khi sếp tự tay chọn tháng trên thanh Header
+        function onMonthChange() {
+            currentMonth = document.getElementById('lunarMonthFilter').value;
+            showListOpen = false;
+            addFormOpen = false;
+            render();
+        }
+
         function saveShow() {
             const title = document.getElementById('sTitle').value.trim();
             const time  = document.getElementById('sTime').value;
@@ -354,7 +379,8 @@
             document.getElementById('sTime').value  = '';
             document.getElementById('lunarSubHint').innerText = 'Chưa chọn ngày';
             
-            currentMonth = getTodayLunarMonth(); 
+            currentMonth = lunar.month; 
+            document.getElementById('lunarMonthFilter').value = currentMonth;
             showListOpen = true;
             addFormOpen = false;
             render();
