@@ -89,7 +89,7 @@
 
         .btn-save { background: linear-gradient(135deg, #D4AF37, #B8860B); color: white; border: none; padding: 12px; width: 100%; max-width: 260px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; display: block; margin: 0 auto; }
 
-        .show-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #444; box-shadow: 0 1px 5px rgba(0,0,0,0.05); }
+        .show-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #444; box-shadow: 0 1px 5px rgba(0,0,0,0.05); text-align: left; }
         .show-item.paid { border-left-color: #34C759; }
         .show-item.waiting { border-left-color: #FF3B30; }
         .lunar-main { font-size: 14px; font-weight: bold; color: var(--gold); }
@@ -111,15 +111,16 @@
         .btn-edit { background: #5856D6; flex: none; width: 40px; }
         .btn-del  { background: #444; flex: none; width: 35px; }
         .btn-money-edit { background: #FF9500; flex: none; padding: 8px 10px; }
-        
+         
         .money-edit-box { background: rgba(255,149,0,0.07); border: 1px dashed #FF9500; border-radius: 10px; padding: 10px; margin-top: 8px; display: flex; gap: 6px; align-items: center; }
         .money-edit-box input[type="number"] { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(142,142,147,0.25); background: var(--bg); color: var(--text); font-size: 14px; font-weight: bold; outline: none; margin: 0; text-align: center; box-sizing: border-box; appearance: none; -webkit-appearance: none; }
         .money-edit-box .btn-save-money { background: #FF9500; color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .money-edit-box .btn-cancel-money { background: #8E8E93; color: white; border: none; border-radius: 8px; padding: 8px 10px; font-size: 11px; cursor: pointer; }
 
         .show-list-wrap { display: none; }
         .show-list-wrap.open { display: block; }
 
-        .money-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #34C759; box-shadow: 0 1px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .money-item { background: var(--card); padding: 10px 12px; border-radius: 12px; margin-top: 8px; border-left: 4px solid #34C759; box-shadow: 0 1px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .money-item.waiting-pay { border-left-color: #FF3B30; }
         .money-item .iname { font-weight: bold; font-size: 14px; }
         .money-item .amount { font-weight: bold; font-size: 14px; color: #34C759; }
@@ -248,14 +249,13 @@
 
         function maskMoney(amount) {
             const str = Math.round(amount).toString();
-            return '•'.repeat(str.length);
+            return '•'.repeat(Math.max(str.length, 3));
         }
 
         const avatarDisplay = document.getElementById('avatarDisplay');
         const brandNameInput = document.getElementById('brandName');
 
         function getTodayLunarMonth() {
-            // Lấy ngày hôm nay theo múi giờ địa phương (tránh lệch UTC)
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -284,7 +284,6 @@
             document.getElementById('lunarMonthFilter').value = currentMonth;
             render();
 
-            // Kiểm tra mỗi phút — nếu sang ngày/tháng mới thì tự nhảy tháng âm
             setInterval(syncCurrentMonth, 60 * 1000);
         });
 
@@ -426,7 +425,6 @@
                 lunarDay: lunar.day, lunarMonth: lunar.month
             };
 
-            // Ngày 2 (tùy chọn)
             if (date2FormOpen && time2) {
                 const lunar2 = getLunarData(time2);
                 newShow.time2 = time2;
@@ -446,6 +444,7 @@
             currentMonth = lunar.month;
             document.getElementById('lunarMonthFilter').value = currentMonth;
             showListOpen = true;
+            addFormOpen = false;
             render();
         }
 
@@ -546,7 +545,6 @@
                     <button class="btn-cancel-money" onclick="startEditMoney(${s.id})">✕</button>
                 </div>` : '';
 
-            // Hiển thị ngày 2 nếu có
             const date2HTML = s.time2 ? (() => {
                 const d2 = new Date(s.time2);
                 return `<div class="date2-badge">
@@ -564,7 +562,7 @@
                         </div>
                         ${date2HTML}
                     </div>
-                    ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${Number(s.money).toLocaleString()}</div>`:''}
+                    ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${Number(s.money).toLocaleString()}đ</div>`:''}
                 </div>
                 <div class="actions">
                     ${s.status!=='paid'?`<button class="btn-act btn-done" onclick="setStatus(${s.id},'done')">XONG</button>`:''}
@@ -587,43 +585,48 @@
             realTotal = 0;
             filtered.forEach(s => { realTotal += Number(s.money); });
 
+            // Cập nhật tổng số lượng và doanh thu ở thanh Summary Tabs
             document.getElementById('countMonth').innerText = filtered.length;
             document.getElementById('moneyMonth').innerText = moneyVisible ? realTotal.toLocaleString()+'đ' : maskMoney(realTotal);
+            
+            // Cập nhật tổng doanh thu ở Tab tài chính
             document.getElementById('totalBarText').innerText = totalVisible
                 ? 'Tổng thực thu: ' + realTotal.toLocaleString() + 'đ'
                 : 'Tổng thực thu: ' + maskMoney(realTotal);
 
+            // Điều khiển class hiển thị hiệu ứng mũi tên và mở rộng form
             document.getElementById('toggleAddBtn').classList.toggle('open', addFormOpen);
             document.getElementById('addFormWrap').classList.toggle('open', addFormOpen);
             document.getElementById('toggleDetailBtn').classList.toggle('open', showListOpen);
             document.getElementById('showListWrap').classList.toggle('open', showListOpen);
 
-            // Đồng bộ trạng thái nút ngày 2
-            const block = document.getElementById('date2Block');
-            const btn2 = document.getElementById('date2ToggleBtn');
-            if (block) block.classList.toggle('show', date2FormOpen);
-            if (btn2) btn2.textContent = date2FormOpen ? '✕ Bỏ ngày thứ 2' : '➕ Thêm ngày thứ 2 (tùy chọn)';
+            // Render danh sách chi tiết các Show
+            const showListContainer = document.getElementById('showList');
+            if (filtered.length === 0) {
+                showListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--sub); font-size:13px;">Tháng này chưa có lịch show nào sếp ơi!</div>';
+            } else {
+                showListContainer.innerHTML = filtered.map(s => showItemHTML(s)).join('');
+            }
 
-            document.getElementById('showList').innerHTML = filtered.length
-                ? filtered.map(showItemHTML).join('')
-                : '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
-
-            document.getElementById('moneyList').innerHTML = filtered.map(s => {
-                const d = new Date(s.time);
-                const d2Info = s.time2 ? (() => {
-                    const d2 = new Date(s.time2);
-                    return ` &nbsp;·&nbsp; 📅 Ngày 2: ${d2.getDate()}/${d2.getMonth()+1}`;
-                })() : '';
-                return `<div class="money-item ${s.status!=='paid'?'waiting-pay':''}">
-                    <div>
-                        <div class="iname">${s.title}</div>
-                        <div class="money-sub">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)} &nbsp;|&nbsp; 📅 ${d.getDate()}/${d.getMonth()+1}${d2Info}</div>
-                    </div>
-                    <div class="amount ${s.status!=='paid'?'pending':''}">
-                        ${s.status==='paid'?'+'+Number(s.money).toLocaleString()+'đ':'🚩 Chưa thu'}
-                    </div>
-                </div>`;
-            }).join('') || '<div style="text-align:center;color:var(--sub);padding:20px;font-size:13px;">Chưa có show nào tháng này</div>';
+            // Render danh sách thu tiền (Tab Tài chính)
+            const moneyListContainer = document.getElementById('moneyList');
+            if (filtered.length === 0) {
+                moneyListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--sub); font-size:13px;">Không có dữ liệu dòng tiền tháng này.</div>';
+            } else {
+                moneyListContainer.innerHTML = filtered.map(s => {
+                    const d = new Date(s.time);
+                    const isPaid = s.status === 'paid';
+                    return `<div class="money-item ${isPaid ? '' : 'waiting-pay'}">
+                        <div>
+                            <div class="iname">${s.title}</div>
+                            <div class="money-sub">🌙 Ngày ${s.lunarDay} (${d.getDate()}/${d.getMonth()+1}) · Trạng thái: ${isPaid ? 'Đã thu' : 'Chưa thu'}</div>
+                        </div>
+                        <div class="amount ${isPaid ? '' : 'pending'}">
+                            ${isPaid ? (moneyVisible ? s.money.toLocaleString() + 'đ' : maskMoney(s.money)) : 'Chờ duyệt'}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
         }
     </script>
 </body>
