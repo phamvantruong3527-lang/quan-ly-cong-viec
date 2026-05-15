@@ -23,13 +23,13 @@
             font-family: -apple-system, sans-serif; 
             background-color: var(--bg); 
             background-position: center;
-            background-size: cover;
+            background-size: cover; /* Giá trị mặc định, sẽ bị ghi đè bởi JS khi sếp chỉnh slider */
             background-attachment: fixed;
             background-repeat: no-repeat;
             color: var(--text); 
             margin: 0; 
             padding: env(safe-area-inset-top) 15px 30px 15px; 
-            transition: background 0.3s, color 0.3s; 
+            transition: background 0.3s, color 0.3s, background-size 0.1s ease; 
             min-height: 100vh;
         }
 
@@ -52,9 +52,15 @@
         #fileInput, #bgInput { display: none; }
         .editable-name { color: var(--gold); font-size: 16px; font-weight: bold; border: none; background: transparent; outline: none; width: 130px; }
 
-        .header-right { display: flex; align-items: center; gap: 12px; }
+        .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
         .month-select { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 5px 8px; border-radius: 8px; font-weight: bold; outline: none; font-size: 12px; cursor: pointer; }
         .header-btn { background: none; border: none; font-size: 18px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Khối thanh trượt zoom nền */
+        .bg-zoom-wrap { display: flex; align-items: center; gap: 4px; background: rgba(142,142,147,0.15); padding: 4px 8px; border-radius: 8px; }
+        .bg-zoom-wrap span { font-size: 10px; font-weight: bold; color: var(--gold); }
+        .bg-zoom-slider { -webkit-appearance: none; appearance: none; width: 60px; height: 4px; border-radius: 2px; background: rgba(142,142,147,0.4); outline: none; }
+        .bg-zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--gold); cursor: pointer; }
 
         .summary-row { display: flex; gap: 10px; margin: 10px 0; }
         .summary-tab { flex: 1; background: var(--card); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid rgba(212,175,55,0.3); border-radius: 14px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
@@ -193,7 +199,14 @@
                 <option value="09">Tháng 9</option><option value="10">Tháng 10</option>
                 <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
             </select>
-            <!-- NÚT CHỌN HÌNH NỀN MỚI CỦA SẾP -->
+            
+            <!-- KHỐI TÙY CHỈNH KÍCH THƯỚC NỀN MỚI NÂNG CẤP -->
+            <div class="bg-zoom-wrap" title="Kéo để thu phóng hình nền">
+                <span>🔍</span>
+                <input type="range" id="bgSizeSlider" class="bg-zoom-slider" min="100" max="300" value="100" oninput="adjustBgSize(this.value)">
+            </div>
+
+            <!-- NÚT CHỌN HÌNH NỀN -->
             <button class="header-btn" onclick="document.getElementById('bgInput').click()" title="Đổi hình nền">🖼️</button>
             <input type="file" id="bgInput" accept="image/*" onchange="changeBackground(this)">
             
@@ -304,6 +317,16 @@
             inputElement.value = formatNumberWithDots(originalVal);
         }
 
+        // HÀM ĐIỀU CHỈNH KÍCH CỠ HÌNH NỀN VÀ LƯU LẠI
+        function adjustBgSize(val) {
+            if (val === "100") {
+                document.body.style.backgroundSize = "cover";
+            } else {
+                document.body.style.backgroundSize = val + "%";
+            }
+            localStorage.setItem('user_app_bg_size', val);
+        }
+
         // XỬ LÝ ĐỔI HÌNH NỀN VÀ NÉN ẢNH ĐỂ LƯU LOCALSTORAGE KHÔNG BỊ QUÁ TẢI
         function changeBackground(input) {
             const file = input.files[0];
@@ -314,7 +337,6 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    // Nén kích thước ảnh nền xuống HD để mượt và không đầy bộ nhớ
                     const maxW = 1080;
                     let w = img.width;
                     let height = img.height;
@@ -422,11 +444,18 @@
             const savedAvatar = localStorage.getItem('user_avatar');
             const savedName   = localStorage.getItem('user_brand_name');
             const savedBg     = localStorage.getItem('user_app_background');
+            const savedBgSize = localStorage.getItem('user_app_bg_size');
             
             if (savedAvatar) avatarDisplay.src = savedAvatar;
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
-            // Tải lại hình nền nếu sếp đã chọn trước đó
+            
             if (savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
+            
+            // Khởi tạo kích thước nền đã lưu
+            if (savedBgSize) {
+                document.getElementById('bgSizeSlider').value = savedBgSize;
+                adjustBgSize(savedBgSize);
+            }
             
             currentMonth = getTodayLunarMonth();
             document.getElementById('lunarMonthFilter').value = currentMonth;
