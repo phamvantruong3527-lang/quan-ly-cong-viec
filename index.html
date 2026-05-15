@@ -216,34 +216,34 @@
         const avatarDisplay = document.getElementById('avatarDisplay');
         const brandNameInput = document.getElementById('brandName');
 
-        // BẢNG TRA CỨU LỊCH VẠN NIÊN KHỚP CHUẨN 100% NĂM 2026 TẠI VIỆT NAM
+        // BẢNG TRA CỨU LỊCH VẠN NIÊN SỬ DỤNG GIỜ UTC CHUẨN 100% NĂM 2026 TẠI VIỆT NAM
         function getLunarData(dateString) {
             if (!dateString) return { day: "??", month: "??" };
             
             const parts = dateString.split('-');
-            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0);
+            // Sử dụng Date.UTC để ép đúng ngày giờ hệ thống không bị ảnh hưởng bởi Timezone lệch ngày
+            const d = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 0, 0, 0, 0));
             
-            // Định nghĩa chính xác ngày bắt đầu Dương Lịch của từng tháng Âm Lịch trong năm 2026
             const lunarMonths = [
-                { name: "11", start: new Date(2025, 11, 20), days: 30 }, // Thập nhất 2025 kéo dài đến 18/1/2026
-                { name: "12", start: new Date(2026, 0, 19), days: 29 },  // Chạp 2025 kéo dài từ 19/1 đến 16/2/2026
-                { name: "01", start: new Date(2026, 1, 17), days: 30 },  // Mùng 1 tết Bính Ngọ là ngày 17/02/2026 Dương
-                { name: "02", start: new Date(2026, 2, 19), days: 29 },  // Mùng 1 tháng 2 Âm là 19/03/2026 Dương
-                { name: "03", start: new Date(2026, 3, 17), days: 30 },  // Mùng 1 tháng 3 Âm là 17/04/2026 Dương
-                { name: "04", start: new Date(2026, 4, 16), days: 29 },  // Mùng 1 tháng 4 Âm là 16/05/2026 Dương
-                { name: "05", start: new Date(2026, 5, 14), days: 30 },  // Mùng 1 tháng 5 Âm là 14/06/2026 Dương
-                { name: "06", start: new Date(2026, 6, 14), days: 29 },  // Mùng 1 tháng 6 Âm là 14/07/2026 Dương
-                { name: "07", start: new Date(2026, 7, 12), days: 30 },  // Mùng 1 tháng 7 Âm là 12/08/2026 Dương
-                { name: "08", start: new Date(2026, 8, 11), days: 29 },  // Mùng 1 tháng 8 Âm là 11/09/2026 Dương
-                { name: "09", start: new Date(2026, 9, 10), days: 30 },  // Mùng 1 tháng 9 Âm là 10/10/2026 Dương
-                { name: "10", start: new Date(2026, 10, 10), days: 29 }, // Mùng 1 tháng 10 Âm là 10/11/2026 Dương
-                { name: "11", start: new Date(2026, 11, 9), days: 30 },  // Mùng 1 tháng 11 Âm là 09/12/2026 Dương
-                { name: "12", start: new Date(2027, 0, 8), days: 29 }    // Mùng 1 tháng Chạp Âm là 08/01/2027 Dương
+                { name: "11", start: new Date(Date.UTC(2025, 11, 20)), days: 30 }, 
+                { name: "12", start: new Date(Date.UTC(2026, 0, 19)), days: 29 },  
+                { name: "01", start: new Date(Date.UTC(2026, 1, 17)), days: 30 },  // Mùng 1 Tết 2026 = 17/02/2026 Dương
+                { name: "02", start: new Date(Date.UTC(2026, 2, 19)), days: 29 },  
+                { name: "03", start: new Date(Date.UTC(2026, 3, 17)), days: 30 },  
+                { name: "04", start: new Date(Date.UTC(2026, 4, 16)), days: 29 },  
+                { name: "05", start: new Date(Date.UTC(2026, 5, 14)), days: 30 },  
+                { name: "06", start: new Date(Date.UTC(2026, 6, 14)), days: 29 },  
+                { name: "07", start: new Date(Date.UTC(2026, 7, 12)), days: 30 },  
+                { name: "08", start: new Date(Date.UTC(2026, 8, 11)), days: 29 },  
+                { name: "09", start: new Date(Date.UTC(2026, 9, 10)), days: 30 },  
+                { name: "10", start: new Date(Date.UTC(2026, 10, 10)), days: 29 }, 
+                { name: "11", start: new Date(Date.UTC(2026, 11, 9)), days: 30 },  
+                { name: "12", start: new Date(Date.UTC(2027, 0, 8)), days: 29 }    
             ];
 
             for (const m of lunarMonths) {
                 const end = new Date(m.start);
-                end.setDate(end.getDate() + m.days);
+                end.setUTCDate(end.getUTCDate() + m.days);
                 if (d >= m.start && d < end) {
                     const day = Math.floor((d.getTime() - m.start.getTime()) / 86400000) + 1;
                     return { day: String(day).padStart(2, '0'), month: m.name };
@@ -260,7 +260,7 @@
             label.innerText = `🌙 Âm lịch: Ngày ${parseInt(lunar.day)} tháng ${parseInt(lunar.month)}`;
         }
 
-        // CƠ CHẾ ĐỒNG BỘ ÉP BUỘC: Sửa toàn bộ show cũ đã lưu theo lịch chuẩn mới 2026
+        // CƠ CHẾ ĐỒNG BỘ ÉP BUỘC: Chuẩn hóa toàn bộ dữ liệu show cũ theo UTC mới
         function fixAndNormalizeOldData() {
             let hasChanges = false;
             shows.forEach(s => {
@@ -275,7 +275,7 @@
             });
             if (hasChanges) { 
                 localStorage.setItem(DB_NAME, JSON.stringify(shows)); 
-                console.log("Đức Tú Event: Đã tự động sửa đổi toàn bộ lịch cũ về mốc chuẩn 2026.");
+                console.log("Đức Tú Event: Đã tự động cập nhật hệ thống ngày chọn theo UTC.");
             }
         }
 
@@ -299,7 +299,7 @@
         }
 
         window.addEventListener('load', () => {
-            fixAndNormalizeOldData(); // Khởi chạy sửa toàn bộ show đã lưu
+            fixAndNormalizeOldData(); 
             const savedAvatar = localStorage.getItem('user_avatar');
             const savedName   = localStorage.getItem('user_brand_name');
             if (savedAvatar) avatarDisplay.src = savedAvatar;
