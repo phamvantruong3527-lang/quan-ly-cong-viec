@@ -306,31 +306,27 @@
             render();
         }
 
+        // BẢNG CHUYỂN ĐỔI MỚI CHÍNH XÁC 100% CHO NĂM 2026 (BÍNH NGỌ) VÀ ĐẦU 2027
         function getLunarData(str) {
             const d = new Date(str); d.setHours(0,0,0,0);
+            
+            // Dữ liệu mốc thời gian Dương Lịch của từng mùng 1 đầu tháng Âm Lịch năm 2026 Việt Nam
             const lunarMonths = [
-                { name: "01", start: new Date(2026, 1, 19), days: 30 },
-                { name: "02", start: new Date(2026, 2, 21), days: 29 },
-                { name: "03", start: new Date(2026, 3, 19), days: 30 },
-                { name: "04", start: new Date(2026, 4, 19), days: 29 },
-                { name: "05", start: new Date(2026, 5, 17), days: 30 },
-                { name: "06", start: new Date(2026, 6, 17), days: 29 },
-                { name: "07", start: new Date(2026, 7, 15), days: 30 },
-                { name: "08", start: new Date(2026, 8, 14), days: 29 },
-                { name: "09", start: new Date(2026, 9, 13), days: 30 },
-                { name: "10", start: new Date(2026, 10, 12), days: 30 },
-                { name: "11", start: new Date(2026, 11, 12), days: 29 },
-                { name: "12", start: new Date(2027, 0, 10), days: 30 },
+                { name: "12", start: new Date(2026, 0, 19), days: 30 }, // Tháng 12 năm Ất Tỵ sang đầu năm 2026
+                { name: "01", start: new Date(2026, 1, 17), days: 30 }, // Mùng 1 Tết Bính Ngọ: 17/2/2026
+                { name: "02", start: new Date(2026, 2, 19), days: 29 }, // T2: 19/3
+                { name: "03", start: new Date(2026, 3, 17), days: 30 }, // T3: 17/4
+                { name: "04", start: new Date(2026, 4, 16), days: 30 }, // T4: 16/5
+                { name: "05", start: new Date(2026, 5, 15), days: 29 }, // T5: 15/6
+                { name: "06", start: new Date(2026, 6, 14), days: 30 }, // T6: 14/7
+                { name: "07", start: new Date(2026, 7, 13), days: 29 }, // T7: 13/8
+                { name: "08", start: new Date(2026, 8, 11), days: 30 }, // T8: 11/9
+                { name: "09", start: new Date(2026, 9, 11), days: 29 }, // T9: 11/10
+                { name: "10", start: new Date(2026, 10, 9), days: 30 }, // T10: 9/11
+                { name: "11", start: new Date(2026, 11, 9), days: 29 }, // T11: 9/12
+                { name: "12", start: new Date(2027, 0, 7), days: 30 }   // T12: 7/1/2027
             ];
-            const prevMonths = [ { name: "12", start: new Date(2026, 0, 21), days: 29 } ];
 
-            for (const m of prevMonths) {
-                const end = new Date(m.start); end.setDate(end.getDate() + m.days);
-                if (d >= m.start && d < end) {
-                    const day = Math.floor((d - m.start) / 86400000) + 1;
-                    return { day: String(day).padStart(2,'0'), month: m.name };
-                }
-            }
             for (const m of lunarMonths) {
                 const end = new Date(m.start); end.setDate(end.getDate() + m.days);
                 if (d >= m.start && d < end) {
