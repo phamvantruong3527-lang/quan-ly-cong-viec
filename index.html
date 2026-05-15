@@ -70,20 +70,6 @@
         .field-label { font-size: 10px; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 0.6px; padding: 5px 10px 0 10px; display: block; text-align: center; }
         .field-wrap input[type="date"] { border: none; margin: 0; padding: 6px 10px 8px 10px; max-width: 100%; width: 100%; background: transparent; text-align: center; }
 
-        /* Ngày 2 toggle */
-        .date2-toggle-wrap { width: 100%; max-width: 260px; margin: 0 auto 10px auto; }
-        .date2-toggle-btn {
-            width: 100%; background: transparent;
-            border: 1px dashed rgba(212,175,55,0.5);
-            border-radius: 10px; padding: 8px 12px;
-            color: var(--gold); font-size: 12px; font-weight: bold;
-            cursor: pointer; text-align: center;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .date2-toggle-btn:hover { background: rgba(212,175,55,0.08); }
-        .date2-block { display: none; margin-top: 8px; }
-        .date2-block.show { display: block; }
-
         .lunar-preview { display: none; background: rgba(212,175,55,0.1); border: 1px solid var(--gold); border-radius: 10px; padding: 8px; margin: 0 auto 10px auto; max-width: 260px; font-size: 13px; color: var(--text); font-weight: bold; text-align: center; }
         .lunar-preview.show { display: block; }
 
@@ -94,14 +80,6 @@
         .show-item.waiting { border-left-color: #FF3B30; }
         .lunar-main { font-size: 14px; font-weight: bold; color: var(--gold); }
         .solar-sub { font-size: 10px; color: var(--sub); margin-left: 5px; }
-
-        /* Badge ngày 2 */
-        .date2-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.35);
-            border-radius: 6px; padding: 2px 7px; margin-top: 5px;
-            font-size: 11px; color: var(--gold); font-weight: bold;
-        }
 
         .actions { margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap; }
         .btn-act { flex: 1; border: none; padding: 8px; border-radius: 8px; font-size: 10px; font-weight: bold; color: white; cursor: pointer; min-width: 45px; }
@@ -187,24 +165,10 @@
                 <input type="text" id="sTitle" placeholder="Tên khách hàng / Show diễn">
 
                 <div class="field-wrap">
-                    <span class="field-label">📅 Ngày 1 – Ngày chạy show</span>
+                    <span class="field-label">📅 Ngày diễn</span>
                     <input type="date" id="sTime">
                 </div>
                 <div class="lunar-preview" id="lunarPreview"></div>
-
-                <!-- Nút bật ngày 2 -->
-                <div class="date2-toggle-wrap">
-                    <button class="date2-toggle-btn" id="date2ToggleBtn" onclick="toggleDate2Form()">
-                        ➕ Thêm ngày thứ 2 (tùy chọn)
-                    </button>
-                    <div class="date2-block" id="date2Block">
-                        <div class="field-wrap" style="margin-top:0;">
-                            <span class="field-label">📅 Ngày 2 – Ngày setup / dự phòng</span>
-                            <input type="date" id="sTime2">
-                        </div>
-                        <div class="lunar-preview" id="lunarPreview2"></div>
-                    </div>
-                </div>
 
                 <button class="btn-save" onclick="saveShow()">LƯU LỊCH DIỄN</button>
             </div>
@@ -244,7 +208,6 @@
         let realTotal = 0;
         let showListOpen = false;
         let addFormOpen = false;
-        let date2FormOpen = false;
         let currentMonth = '';
 
         function maskMoney(amount) {
@@ -270,7 +233,6 @@
                 document.getElementById('lunarMonthFilter').value = currentMonth;
                 showListOpen = false;
                 addFormOpen = false;
-                date2FormOpen = false;
                 render();
             }
         }
@@ -310,22 +272,7 @@
 
         function toggleAddForm() {
             addFormOpen = !addFormOpen;
-            if (!addFormOpen) { date2FormOpen = false; }
             render();
-        }
-
-        function toggleDate2Form() {
-            date2FormOpen = !date2FormOpen;
-            const block = document.getElementById('date2Block');
-            const btn = document.getElementById('date2ToggleBtn');
-            if (block) block.classList.toggle('show', date2FormOpen);
-            if (btn) btn.textContent = date2FormOpen ? '✕ Bỏ ngày thứ 2' : '➕ Thêm ngày thứ 2 (tùy chọn)';
-            if (!date2FormOpen) {
-                const inp = document.getElementById('sTime2');
-                if (inp) inp.value = '';
-                const prev = document.getElementById('lunarPreview2');
-                if (prev) prev.classList.remove('show');
-            }
         }
 
         function toggleShowList() {
@@ -356,7 +303,6 @@
             currentMonth = document.getElementById('lunarMonthFilter').value;
             showListOpen = false;
             addFormOpen = false;
-            date2FormOpen = false;
             render();
         }
 
@@ -403,18 +349,9 @@
             preview.classList.add('show');
         });
 
-        document.getElementById('sTime2').addEventListener('change', function() {
-            const preview = document.getElementById('lunarPreview2');
-            if (!this.value) { preview.classList.remove('show'); return; }
-            const lunar = getLunarData(this.value);
-            preview.innerHTML = `🌙 Âm lịch: Ngày ${lunar.day} tháng ${parseInt(lunar.month)}`;
-            preview.classList.add('show');
-        });
-
         function saveShow() {
             const title = document.getElementById('sTitle').value.trim();
             const time  = document.getElementById('sTime').value;
-            const time2 = document.getElementById('sTime2').value;
             if (!title || !time) return alert("Sếp điền đủ thông tin nhé!");
 
             const lunar = getLunarData(time);
@@ -425,22 +362,12 @@
                 lunarDay: lunar.day, lunarMonth: lunar.month
             };
 
-            if (date2FormOpen && time2) {
-                const lunar2 = getLunarData(time2);
-                newShow.time2 = time2;
-                newShow.lunarDay2 = lunar2.day;
-                newShow.lunarMonth2 = lunar2.month;
-            }
-
             shows.push(newShow);
             updateData();
 
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value  = '';
-            document.getElementById('sTime2').value = '';
             document.getElementById('lunarPreview').classList.remove('show');
-            document.getElementById('lunarPreview2').classList.remove('show');
-            date2FormOpen = false;
             currentMonth = lunar.month;
             document.getElementById('lunarMonthFilter').value = currentMonth;
             showListOpen = true;
@@ -473,7 +400,6 @@
         function saveInlineEdit(id) {
             const newTitle = document.getElementById(`edit-t-${id}`).value;
             const newTime  = document.getElementById(`edit-d-${id}`).value;
-            const newTime2 = document.getElementById(`edit-d2-${id}`).value;
             if (!newTitle || !newTime) return;
             const lunar = getLunarData(newTime);
             const idx = shows.findIndex(x => x.id === id);
@@ -482,16 +408,6 @@
             shows[idx].lunarDay = lunar.day;
             shows[idx].lunarMonth = lunar.month;
 
-            if (newTime2) {
-                const lunar2 = getLunarData(newTime2);
-                shows[idx].time2 = newTime2;
-                shows[idx].lunarDay2 = lunar2.day;
-                shows[idx].lunarMonth2 = lunar2.month;
-            } else {
-                delete shows[idx].time2;
-                delete shows[idx].lunarDay2;
-                delete shows[idx].lunarMonth2;
-            }
             editingId = null; updateData();
         }
 
@@ -524,12 +440,8 @@
                 return `<div class="inline-edit-box" style="background:rgba(212,175,55,0.05); padding:10px; border-radius:10px; margin-top:5px; border:1px dashed var(--gold);">
                     <input type="text" id="edit-t-${s.id}" value="${s.title}">
                     <div class="field-wrap" style="margin:0 auto 10px auto;">
-                        <span class="field-label">📅 Ngày 1 – Ngày chạy show</span>
+                        <span class="field-label">📅 Ngày diễn</span>
                         <input type="date" id="edit-d-${s.id}" value="${s.time}">
-                    </div>
-                    <div class="field-wrap" style="margin:0 auto 10px auto;">
-                        <span class="field-label">📅 Ngày 2 – Setup / Dự phòng (tùy chọn)</span>
-                        <input type="date" id="edit-d2-${s.id}" value="${s.time2 || ''}">
                     </div>
                     <div style="display:flex;gap:5px;">
                         <button style="flex:1;padding:8px;background:var(--gold);color:white;border:none;border-radius:8px;font-size:10px;cursor:pointer;" onclick="saveInlineEdit(${s.id})">LƯU</button>
@@ -545,13 +457,6 @@
                     <button class="btn-cancel-money" onclick="startEditMoney(${s.id})">✕</button>
                 </div>` : '';
 
-            const date2HTML = s.time2 ? (() => {
-                const d2 = new Date(s.time2);
-                return `<div class="date2-badge">
-                    📅 Ngày 2: 🌙 ${s.lunarDay2}/${parseInt(s.lunarMonth2)} &nbsp;·&nbsp; ${d2.getDate()}/${d2.getMonth()+1}
-                </div>`;
-            })() : '';
-
             return `<div class="show-item ${s.status}">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
@@ -560,7 +465,6 @@
                             <span class="lunar-main">🌙 ${s.lunarDay}/${parseInt(s.lunarMonth)}</span>
                             <span class="solar-sub">📅 ${d.getDate()}/${d.getMonth()+1}</span>
                         </div>
-                        ${date2HTML}
                     </div>
                     ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${Number(s.money).toLocaleString()}đ</div>`:''}
                 </div>
@@ -585,22 +489,18 @@
             realTotal = 0;
             filtered.forEach(s => { realTotal += Number(s.money); });
 
-            // Cập nhật tổng số lượng và doanh thu ở thanh Summary Tabs
             document.getElementById('countMonth').innerText = filtered.length;
             document.getElementById('moneyMonth').innerText = moneyVisible ? realTotal.toLocaleString()+'đ' : maskMoney(realTotal);
             
-            // Cập nhật tổng doanh thu ở Tab tài chính
             document.getElementById('totalBarText').innerText = totalVisible
                 ? 'Tổng thực thu: ' + realTotal.toLocaleString() + 'đ'
                 : 'Tổng thực thu: ' + maskMoney(realTotal);
 
-            // Điều khiển class hiển thị hiệu ứng mũi tên và mở rộng form
             document.getElementById('toggleAddBtn').classList.toggle('open', addFormOpen);
             document.getElementById('addFormWrap').classList.toggle('open', addFormOpen);
             document.getElementById('toggleDetailBtn').classList.toggle('open', showListOpen);
             document.getElementById('showListWrap').classList.toggle('open', showListOpen);
 
-            // Render danh sách chi tiết các Show
             const showListContainer = document.getElementById('showList');
             if (filtered.length === 0) {
                 showListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--sub); font-size:13px;">Tháng này chưa có lịch show nào sếp ơi!</div>';
@@ -608,7 +508,6 @@
                 showListContainer.innerHTML = filtered.map(s => showItemHTML(s)).join('');
             }
 
-            // Render danh sách thu tiền (Tab Tài chính)
             const moneyListContainer = document.getElementById('moneyList');
             if (filtered.length === 0) {
                 moneyListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--sub); font-size:13px;">Không có dữ liệu dòng tiền tháng này.</div>';
