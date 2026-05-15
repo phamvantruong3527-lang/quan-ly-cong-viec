@@ -91,7 +91,7 @@
         .btn-money-edit { background: #FF9500; flex: none; padding: 8px 10px; }
          
         .money-edit-box { background: rgba(255,149,0,0.07); border: 1px dashed #FF9500; border-radius: 10px; padding: 10px; margin-top: 8px; display: flex; gap: 6px; align-items: center; }
-        .money-edit-box input[type="number"] { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(142,142,147,0.25); background: var(--bg); color: var(--text); font-size: 14px; font-weight: bold; outline: none; margin: 0; text-align: center; box-sizing: border-box; appearance: none; -webkit-appearance: none; }
+        .money-edit-box input[type="text"] { flex: 1; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(142,142,147,0.25); background: var(--bg); color: var(--text); font-size: 14px; font-weight: bold; outline: none; margin: 0; text-align: center; box-sizing: border-box; }
         .money-edit-box .btn-save-money { background: #FF9500; color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .money-edit-box .btn-cancel-money { background: #8E8E93; color: white; border: none; border-radius: 8px; padding: 8px 10px; font-size: 11px; cursor: pointer; }
 
@@ -212,9 +212,31 @@
         let addFormOpen = false;
         let currentMonth = '';
 
+        // Hàm format thêm dấu chấm ngăn cách
+        function formatNumberWithDots(val) {
+            if (!val && val !== 0) return '';
+            return val.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Hàm parse từ chuỗi có dấu chấm về dạng số thuần túy để tính toán
+        function parseDotsToNumber(str) {
+            if (!str) return 0;
+            return Number(str.toString().replace(/\./g, ''));
+        }
+
         function maskMoney(amount) {
             const str = Math.round(amount).toString();
             return '•'.repeat(Math.max(str.length, 3));
+        }
+
+        // Hàm xử lý tự động thêm dấu chấm khi sếp đang gõ tiền
+        function handleMoneyInput(inputElement) {
+            let originalVal = inputElement.value.replace(/\./g, '');
+            if (isNaN(originalVal)) {
+                inputElement.value = '';
+                return;
+            }
+            inputElement.value = formatNumberWithDots(originalVal);
         }
 
         const avatarDisplay = document.getElementById('avatarDisplay');
@@ -281,14 +303,13 @@
 
         function getTodayLunarMonth() {
             const now = new Date();
-            now.setDate(now.getDate() + 2); // Giữ logic cộng sớm 2 ngày để ép hiển thị tháng 4 âm luôn
+            now.setDate(now.getDate() + 2); 
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             return getLunarData(`${yyyy}-${mm}-${dd}`).month;
         }
 
-        // Đồng bộ ngầm thông minh: Chỉ chạy nếu sếp đang lọc đúng tiến trình tháng thực tế
         function syncCurrentMonth() {
             const todayLunarMonth = getTodayLunarMonth();
             if (todayLunarMonth !== '??' && todayLunarMonth !== currentMonth) {
@@ -351,7 +372,6 @@
             document.getElementById('tab-money-btn').classList.toggle('active', tab === 'money');
         }
 
-        // Khi sếp tự tay chọn tháng trên thanh Header
         function onMonthChange() {
             currentMonth = document.getElementById('lunarMonthFilter').value;
             showListOpen = false;
@@ -400,10 +420,10 @@
 
         function saveEditedMoney(id) {
             const input = document.getElementById(`money-input-${id}`);
-            const val = input ? Number(input.value) : null;
-            if (val === null || isNaN(val) || val < 0) return alert("Sếp nhập số tiền hợp lệ nhé!");
+            const rawVal = input ? parseDotsToNumber(input.value) : 0;
+            if (isNaN(rawVal) || rawVal < 0) return alert("Sếp nhập số tiền hợp lệ nhé!");
             const idx = shows.findIndex(x => x.id === id);
-            if (idx > -1) { shows[idx].money = val; }
+            if (idx > -1) { shows[idx].money = rawVal; }
             editingMoneyId = null;
             updateData();
         }
@@ -425,9 +445,16 @@
         function setStatus(id, type) {
             const s = shows.find(x => x.id === id);
             if (type === 'done') {
+                // Sử dụng prompt tuỳ biến hỗ trợ gõ phân tách hàng nghìn liên tục
                 const m = prompt("Số tiền thực thu?");
-                if (m !== null && m !== "") { 
-                    s.money = Number(m); 
+                if (m !== null && m !== "") {
+                    // Chấp nhận cả việc sếp tự gõ dấu chấm hoặc không gõ dấu chấm
+                    const cleanedMoney = parseDotsToNumber(m);
+                    if (isNaN(cleanedMoney) || cleanedMoney < 0) {
+                        alert("Sếp nhập số tiền không hợp lệ rồi!");
+                        return;
+                    }
+                    s.money = cleanedMoney; 
                     s.status = 'paid'; 
                 } else if (m === "") {
                     alert("Sếp phải nhập số tiền chứ!");
@@ -464,9 +491,10 @@
                 </div>`;
             }
 
+            const formattedMoneyVal = formatNumberWithDots(s.money);
             const moneyEditHTML = editingMoneyId === s.id ? `
                 <div class="money-edit-box">
-                    <input type="number" id="money-input-${s.id}" value="${s.money}" placeholder="Nhập số tiền..." min="0">
+                    <input type="text" id="money-input-${s.id}" value="${formattedMoneyVal}" placeholder="Nhập số tiền..." oninput="handleMoneyInput(this)">
                     <button class="btn-save-money" onclick="saveEditedMoney(${s.id})">LƯU</button>
                     <button class="btn-cancel-money" onclick="startEditMoney(${s.id})">✕</button>
                 </div>` : '';
@@ -480,7 +508,7 @@
                             <span class="solar-sub">📅 ${dDay}/${dMonth}</span>
                         </div>
                     </div>
-                    ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${Number(s.money).toLocaleString()}đ</div>`:''}
+                    ${s.status==='paid'?`<div style="color:#34C759;font-weight:bold;font-size:13px;">+${formatNumberWithDots(s.money)}đ</div>`:''}
                 </div>
                 <div class="actions">
                     ${s.status!=='paid'?`<button class="btn-act btn-done" onclick="setStatus(${s.id},'done')">XONG</button>`:''}
@@ -507,10 +535,10 @@
             filtered.forEach(s => { realTotal += Number(s.money); });
 
             document.getElementById('countMonth').innerText = filtered.length;
-            document.getElementById('moneyMonth').innerText = moneyVisible ? realTotal.toLocaleString()+'đ' : maskMoney(realTotal);
+            document.getElementById('moneyMonth').innerText = moneyVisible ? formatNumberWithDots(realTotal)+'đ' : maskMoney(realTotal);
             
             document.getElementById('totalBarText').innerText = totalVisible
-                ? 'Tổng thực thu: ' + realTotal.toLocaleString() + 'đ'
+                ? 'Tổng thực thu: ' + formatNumberWithDots(realTotal) + 'đ'
                 : 'Tổng thực thu: ' + maskMoney(realTotal);
 
             document.getElementById('toggleAddBtn').classList.toggle('open', addFormOpen);
@@ -540,7 +568,7 @@
                             <div class="money-sub">🌙 Ngày ${parseInt(s.lunarDay)} (${dDay}/${dMonth}) · Trạng thái: ${isPaid ? 'Đã thu' : 'Chưa thu'}</div>
                         </div>
                         <div class="amount ${isPaid ? '' : 'pending'}">
-                            ${isPaid ? (moneyVisible ? s.money.toLocaleString() + 'đ' : maskMoney(s.money)) : 'Chờ duyệt'}
+                            ${isPaid ? (moneyVisible ? formatNumberWithDots(s.money) + 'đ' : maskMoney(s.money)) : 'Chờ duyệt'}
                         </div>
                     </div>`;
                 }).join('');
