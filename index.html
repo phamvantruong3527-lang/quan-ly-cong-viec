@@ -26,9 +26,8 @@
         .eye-btn { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; color: var(--sub); font-size: 13px; opacity: 0.5; transition: opacity 0.2s; }
         .eye-btn:hover { opacity: 1; }
 
-        .filter-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
-        .filter-label { font-size: 11px; font-weight: bold; color: var(--sub); text-transform: uppercase; }
-        .month-select { background: var(--card); color: var(--gold); border: 1px solid var(--gold); padding: 5px 10px; border-radius: 10px; font-weight: bold; outline: none; font-size: 13px; }
+        .filter-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px; background: var(--card); padding: 8px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.15); }
+        .filter-label { font-size: 12px; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -139,15 +138,7 @@
     </div>
 
     <div class="filter-row">
-        <span class="filter-label">Tháng âm:</span>
-        <select id="lunarMonthFilter" class="month-select" onchange="onMonthChange()">
-            <option value="01">Tháng 1</option><option value="02">Tháng 2</option>
-            <option value="03">Tháng 3</option><option value="04">Tháng 4</option>
-            <option value="05">Tháng 5</option><option value="06">Tháng 6</option>
-            <option value="07">Tháng 7</option><option value="08">Tháng 8</option>
-            <option value="09">Tháng 9</option><option value="10">Tháng 10</option>
-            <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
-        </select>
+        <span class="filter-label" id="currentLunarMonthLabel">ĐANG HIỂN THỊ: THÁNG LỊCH ÂM --</span>
     </div>
 
     <div class="tab-content active" id="tab-show">
@@ -216,7 +207,6 @@
         const avatarDisplay = document.getElementById('avatarDisplay');
         const brandNameInput = document.getElementById('brandName');
 
-        // BẢNG TRA CỨU KHỚP TỪNG NGÀY ĐẦU THÁNG THEO GIỜ LỊCH VIỆT NAM (GMT+7) NĂM 2026
         function getLunarData(dateString) {
             if (!dateString) return { day: "??", month: "??" };
             
@@ -226,10 +216,10 @@
             const lunarMonths = [
                 { name: "11", start: new Date(Date.UTC(2025, 11, 20)), days: 30 }, 
                 { name: "12", start: new Date(Date.UTC(2026, 0, 19)), days: 29 },  
-                { name: "01", start: new Date(Date.UTC(2026, 1, 17)), days: 30 },  // Mùng 1 Tết Bính Ngọ (17/02 Dương)
-                { name: "02", start: new Date(Date.UTC(2026, 2, 19)), days: 29 },  // Mùng 1 tháng 2 Âm (19/03 Dương)
-                { name: "03", start: new Date(Date.UTC(2026, 3, 17)), days: 30 },  // Mùng 1 tháng 3 Âm (17/04 Dương)
-                { name: "04", start: new Date(Date.UTC(2026, 4, 17)), days: 29 },  // Mùng 1 tháng 4 Âm (17/05 Dương)
+                { name: "01", start: new Date(Date.UTC(2026, 1, 17)), days: 30 },  
+                { name: "02", start: new Date(Date.UTC(2026, 2, 19)), days: 29 },  
+                { name: "03", start: new Date(Date.UTC(2026, 3, 17)), days: 30 },  
+                { name: "04", start: new Date(Date.UTC(2026, 4, 17)), days: 29 },  
                 { name: "05", start: new Date(Date.UTC(2026, 5, 15)), days: 30 },  
                 { name: "06", start: new Date(Date.UTC(2026, 6, 14)), days: 29 },  
                 { name: "07", start: new Date(Date.UTC(2026, 7, 13)), days: 30 },  
@@ -273,7 +263,6 @@
             });
             if (hasChanges) { 
                 localStorage.setItem(DB_NAME, JSON.stringify(shows)); 
-                console.log("Đức Tú Event: Đã hiệu chỉnh lại lịch âm dương đồng bộ mốc chuẩn.");
             }
         }
 
@@ -285,19 +274,12 @@
             return getLunarData(`${yyyy}-${mm}-${dd}`).month;
         }
 
-        // ĐÃ SỬA: Chỉ đồng bộ ngầm khi sếp ĐANG xem đúng tháng âm lịch hiện tại của thực tế
-        function syncCurrentMonth() {
+        // TỰ ĐỘNG KHÓA VÀ CẬP NHẬT THEO THỜI GIAN THỰC
+        function enforceCurrentMonth() {
             const todayLunarMonth = getTodayLunarMonth();
             if (todayLunarMonth !== '??' && todayLunarMonth !== currentMonth) {
-                // Kiểm tra xem bộ lọc select trên màn hình có đang trùng với tháng thực tế trước đó không
-                const filterSelect = document.getElementById('lunarMonthFilter');
-                if (filterSelect.value === currentMonth) {
-                    currentMonth = todayLunarMonth;
-                    filterSelect.value = currentMonth;
-                    showListOpen = false;
-                    addFormOpen = false;
-                    render();
-                }
+                currentMonth = todayLunarMonth;
+                render();
             }
         }
 
@@ -308,12 +290,11 @@
             if (savedAvatar) avatarDisplay.src = savedAvatar;
             brandNameInput.value = savedName || "ĐỨC TÚ EVENT";
             
-            // Luôn nhận chính xác tháng âm lịch hiện tại khi vừa mở ứng dụng lên
             currentMonth = getTodayLunarMonth();
-            document.getElementById('lunarMonthFilter').value = currentMonth;
             render();
 
-            setInterval(syncCurrentMonth, 60 * 1000);
+            // Cứ 60 giây chạy ngầm kiểm tra lịch để tự động đồng bộ
+            setInterval(enforceCurrentMonth, 60 * 1000);
         });
 
         brandNameInput.addEventListener('input', () => localStorage.setItem('user_brand_name', brandNameInput.value));
@@ -350,13 +331,6 @@
             document.getElementById('tab-money-btn').classList.toggle('active', tab === 'money');
         }
 
-        function onMonthChange() {
-            currentMonth = document.getElementById('lunarMonthFilter').value;
-            showListOpen = false;
-            addFormOpen = false;
-            render();
-        }
-
         function saveShow() {
             const title = document.getElementById('sTitle').value.trim();
             const time  = document.getElementById('sTime').value;
@@ -371,13 +345,14 @@
             };
 
             shows.push(newShow);
-            updateData();
+            localStorage.setItem(DB_NAME, JSON.stringify(shows));
 
             document.getElementById('sTitle').value = '';
             document.getElementById('sTime').value  = '';
             document.getElementById('lunarSubHint').innerText = 'Chưa chọn ngày';
-            currentMonth = lunar.month;
-            document.getElementById('lunarMonthFilter').value = currentMonth;
+            
+            // Re-sync lại tháng thực tế sau khi thêm
+            currentMonth = getTodayLunarMonth(); 
             showListOpen = true;
             addFormOpen = false;
             render();
@@ -494,6 +469,10 @@
         }
 
         function render() {
+            // Cập nhật nhãn thông báo tháng âm lịch hiện tại trên thanh bar
+            const displayMonthText = currentMonth ? parseInt(currentMonth) : '--';
+            document.getElementById('currentLunarMonthLabel').innerText = `ĐANG HIỂN THỊ: THÁNG ${displayMonthText} LỊCH ÂM`;
+
             const filtered = shows.filter(s => s.lunarMonth === currentMonth);
             filtered.sort((a, b) => Number(a.lunarDay) - Number(b.lunarDay));
 
@@ -514,7 +493,7 @@
 
             const showListContainer = document.getElementById('showList');
             if (filtered.length === 0) {
-                showListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--sub); font-size:13px;">Tháng này chưa có lịch show nào sếp ơi!</div>';
+                showListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--sub); font-size:13px;">Tháng âm này chưa có lịch show nào sếp ơi!</div>';
             } else {
                 showListContainer.innerHTML = filtered.map(s => showItemHTML(s)).join('');
             }
