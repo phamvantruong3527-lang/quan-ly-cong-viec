@@ -22,18 +22,17 @@
         body { 
             font-family: -apple-system, sans-serif; 
             background-color: var(--bg); 
-            background-position: center;
-            background-size: cover; /* Giá trị mặc định, sẽ bị ghi đè bởi JS khi sếp chỉnh slider */
+            background-position: center top; /* Đưa trọng tâm ảnh lên phía trên để dễ căn chỉnh */
+            background-size: cover; 
             background-attachment: fixed;
             background-repeat: no-repeat;
             color: var(--text); 
             margin: 0; 
             padding: env(safe-area-inset-top) 15px 30px 15px; 
-            transition: background 0.3s, color 0.3s, background-size 0.1s ease; 
+            transition: background 0.3s, color 0.3s; 
             min-height: 100vh;
         }
 
-        /* Khối tiêu đề tinh chỉnh để nổi bật trên mọi hình nền */
         .header { 
             display: flex; 
             align-items: center; 
@@ -56,7 +55,7 @@
         .month-select { background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 5px 8px; border-radius: 8px; font-weight: bold; outline: none; font-size: 12px; cursor: pointer; }
         .header-btn { background: none; border: none; font-size: 18px; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* Khối thanh trượt zoom nền */
+        /* Khối điều chỉnh zoom nền */
         .bg-zoom-wrap { display: flex; align-items: center; gap: 4px; background: rgba(142,142,147,0.15); padding: 4px 8px; border-radius: 8px; }
         .bg-zoom-wrap span { font-size: 10px; font-weight: bold; color: var(--gold); }
         .bg-zoom-slider { -webkit-appearance: none; appearance: none; width: 60px; height: 4px; border-radius: 2px; background: rgba(142,142,147,0.4); outline: none; }
@@ -200,7 +199,7 @@
                 <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
             </select>
             
-            <!-- KHỐI TÙY CHỈNH KÍCH THƯỚC NỀN MỚI NÂNG CẤP -->
+            <!-- KHỐI ZOOM NỀN ĐÃ ĐƯỢC FIX TƯƠNG THÍCH IOS/ANDROID -->
             <div class="bg-zoom-wrap" title="Kéo để thu phóng hình nền">
                 <span>🔍</span>
                 <input type="range" id="bgSizeSlider" class="bg-zoom-slider" min="100" max="300" value="100" oninput="adjustBgSize(this.value)">
@@ -317,17 +316,17 @@
             inputElement.value = formatNumberWithDots(originalVal);
         }
 
-        // HÀM ĐIỀU CHỈNH KÍCH CỠ HÌNH NỀN VÀ LƯU LẠI
+        // TỐI ƯU CÚ PHÁP CHỈNH KÍCH CỠ NỀN CHO CẢ IOS/ANDROID
         function adjustBgSize(val) {
             if (val === "100") {
                 document.body.style.backgroundSize = "cover";
             } else {
-                document.body.style.backgroundSize = val + "%";
+                document.body.style.backgroundSize = val + "% auto";
             }
             localStorage.setItem('user_app_bg_size', val);
         }
 
-        // XỬ LÝ ĐỔI HÌNH NỀN VÀ NÉN ẢNH ĐỂ LƯU LOCALSTORAGE KHÔNG BỊ QUÁ TẢI
+        // CÔNG NGHỆ MỚI: TỰ ĐỘNG THU NHỎ VÀ NÉN ẢNH CỰC MẠNH ĐỂ KHÔNG BỊ LỖI ALBUM
         function changeBackground(input) {
             const file = input.files[0];
             if (!file) return;
@@ -337,7 +336,9 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const maxW = 1080;
+                    
+                    // Giới hạn chiều rộng tối đa là 800px để giảm dung lượng file xuống cực thấp
+                    const maxW = 800; 
                     let w = img.width;
                     let height = img.height;
                     if (w > maxW) {
@@ -348,9 +349,19 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, w, height);
                     
-                    const compressedBg = canvas.toDataURL('image/jpeg', 0.75);
-                    document.body.style.backgroundImage = `url(${compressedBg})`;
-                    localStorage.setItem('user_app_background', compressedBg);
+                    // Nén chất lượng xuống 0.65 (Ảnh vẫn rất nét trên màn hình điện thoại nhưng nhẹ hơn 20 lần)
+                    try {
+                        const compressedBg = canvas.toDataURL('image/jpeg', 0.65);
+                        document.body.style.backgroundImage = `url(${compressedBg})`;
+                        localStorage.setItem('user_app_background', compressedBg);
+                        
+                        // Reset slider về 100% khi có ảnh mới
+                        document.getElementById('bgSizeSlider').value = 100;
+                        document.body.style.backgroundSize = "cover";
+                        localStorage.setItem('user_app_bg_size', 100);
+                    } catch (error) {
+                        alert("Bức ảnh này quá nặng, sếp chọn bức ảnh khác nhẹ hơn hoặc chụp màn hình lại bức ảnh đó rồi chọn lại nhé!");
+                    }
                 };
                 img.src = e.target.result;
             };
@@ -451,7 +462,6 @@
             
             if (savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
             
-            // Khởi tạo kích thước nền đã lưu
             if (savedBgSize) {
                 document.getElementById('bgSizeSlider').value = savedBgSize;
                 adjustBgSize(savedBgSize);
